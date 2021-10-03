@@ -1,0 +1,16 @@
+#+TITLE: Readme
+
+
+** Gopass
+#+begin_src sh
+gopass clone git@github.com:ashfaqfarooqui/pass.git
+
+#+end_src
+
+
+** Shell
+#+begin_src sh
+echo $HOME/.nix-profile/bin/zsh | sudo tee -a /etc/shells
+chsh -s $HOME/.nix-profile/bin/zsh
+
+#+end_src
