@@ -1,16 +1,13 @@
 { config, pkgs, libs, ... }: {
   home.packages = with pkgs;
-    [
+  [
 
-      #    metals
-      #    sbt
-      #    scala
-      #    rust-analyzer
-      libreoffice
-    ];
+    #    metals
+    #    sbt
+    #    scala
+    #    rust-analyzer
+    libreoffice
+    texlive.combined.scheme-full
+  ];
 
-  programs.texlive = {
-    enable = true;
-
-  };
 }

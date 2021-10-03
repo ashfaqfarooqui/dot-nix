@@ -19,7 +19,19 @@
     size = 32;
 
   };
-  home.packages = [ pkgs.xmobar ];
+
+  home.packages = with pkgs; [
+    xmobar
+
+    (makeDesktopItem {
+      name = "XMonad";
+      exec = "xmonad";
+      comment = "Light weight tiling manager";
+      desktopName = "Xmonad";
+      type = "Application";
+    })
+
+  ];
   home.file.".xmobar/xmobarrc".source = ../configs/xmobar/xmobarrc;
   #  programs.xmobar.enable = true;
   #  programs.xmobar.extraConfig = "../configs/xmobar/xmobarrc";
@@ -30,4 +42,7 @@
 
   targets.genericLinux.enable = true;
 
+  programs.autorandr = {
+    enable = true;
+  };
 }

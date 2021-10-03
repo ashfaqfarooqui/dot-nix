@@ -10,13 +10,51 @@
     okular
     evince
     openssh
-    zoom
     zotero
+    libreoffice
+    evince
+    okular
+    copyq
 
   ];
 
+  services.nextcloud-client.enable = true;
+  services.nextcloud-client.startInBackground = true;
   programs.vscode = {
     enable = true;
 
+  };
+
+ programs = {
+    rofi = {
+      enable = true;
+    location = "center";
+    terminal = "termite";
+      width = 50;
+      lines = 5;
+      borderWidth = 0;
+      rowHeight = 1;
+      padding = 5;
+      font = "Iosevka 16";
+      separator = "solid";
+      colors = {
+        window = {
+          background = "#000000";
+          border = "#DD8500";
+          separator = "#DD8500";
+        };
+        rows = {
+          normal = {
+            background = "#000000";
+            foreground = "#DD8500";
+            backgroundAlt = "#000000";
+            highlight = {
+              background = "#DD8500";
+              foreground = "#ffffff";
+            };
+          };
+        };
+      };
+    };
   };
 }

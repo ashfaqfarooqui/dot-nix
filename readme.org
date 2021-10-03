@@ -14,3 +14,10 @@ echo $HOME/.nix-profile/bin/zsh | sudo tee -a /etc/shells
 chsh -s $HOME/.nix-profile/bin/zsh
 
 #+end_src
+
+** Doom
+#+begin_src sh
+git clone --depth 1 https://github.com/hlissner/doom-emacs ~/.emacs.d
+~/.emacs.d/bin/doom install
+
+#+end_src

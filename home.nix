@@ -13,16 +13,13 @@
     { allowUnfree = true; }
   '';
   imports = [
-    ./modules/apps.nix
     ./modules/cli.nix
     ./modules/emacs.nix
     ./modules/git.nix
     ./modules/home-manager.nix
     ./modules/languages.nix
     ./modules/nix-utilities.nix
-    ./modules/linux-only.nix
     ./modules/chat.nix
-    ./modules/ssh.nix
     ./modules/alacritty.nix
     ./modules/nixos-desktop.nix
     ./modules/xmonad.nix

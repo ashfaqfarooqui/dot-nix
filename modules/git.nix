@@ -9,6 +9,11 @@
     enable = true;
     userName = "Ashfaq Farooqui";
     userEmail = "ashfaq@ashfaqfarooqui.me";
+    signing = {
+      signByDefault = true;
+      key = "7A804BCB51DE2D88";
+
+    };
   };
 
 }

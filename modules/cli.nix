@@ -1,4 +1,4 @@
-{ config, pkgs, libs, ... }: {
+{ config, pkgs, lib, ... }: {
   home.packages = with pkgs; [
     termite
     gopass
@@ -12,29 +12,27 @@
     dmenu
     exa
     fd
-    ffsend
     fzf
     gawk
     gnupg
     gnused
     gnutls
     keychain
-    mosh
     nix-zsh-completions
-    nixfmt
-    nnn
+    #nnn
     ripgrep
     rsync
-    socat
     tealdeer
-    tmux
     tree
     unzip
     xsv
     zsh
-    zsh-powerlevel10k
+    #zsh-powerlevel10k
     stow
     htop
+
+    oh-my-zsh
+    fzf-zsh
   ];
 
   programs.direnv = {
@@ -53,7 +51,7 @@
     history.ignorePatterns = [ "rm *" "pkill *" "ls *" ];
     oh-my-zsh = {
       enable = true;
-      plugins = [ "sudo" ];
+      plugins = [ "sudo" "dirhistory" ];
     };
     initExtraFirst = ''
       # Emacs tramp mode compatibility
@@ -67,29 +65,28 @@
     '';
     # initExtraBeforeCompInit = builtins.readFile ../configs/zsh/.zshrc;
 
-    #    plugins = [
-    #      {
-    #        # will source zsh-autosuggestions.plugin.zsh
-    #        name = "zsh-syntax-highlighting";
-    #        src = pkgs.fetchFromGitHub {
-    #          owner = "zsh-users";
-    #          repo = "zsh-syntax-highlighting";
-    #          rev = "v0.7.1";
-    #          sha256 = "932e29a0c75411cb618f02995b66c0a4a25699bc";
-    #        };
-    #      }
-    #      {
-    #        name = "enhancd";
-    #        file = "init.sh";
-    #        src = pkgs.fetchFromGitHub {
-    #          owner = "b4b4r07";
-    #          repo = "enhancd";
-    #          rev = "v2.2.4";
-    #          sha256 = "100b809043a04010ae836f25e4bbab07089e41ab";
-    #        };
-    #      }
-    #    ];
-    #
+    #plugins = [{
+      #  # will source zsh-autosuggestions.plugin.zsh
+      #  name = "zsh-syntax-highlighting";
+      #  src = pkgs.fetchFromGitHub {
+        #    owner = "zsh-users";
+        #    repo = "zsh-syntax-highlighting";
+        #    rev = "v0.7.1";
+        #    sha256 = "1ynymxvbqx8isak9zvfnayb217irwrb1m27cpjqni10rxrk4417m";
+        #  };
+        #}
+        #{
+          #  name = "enhancd";
+          #  file = "init.sh";
+          #  src = pkgs.fetchFromGitHub {
+            #    owner = "b4b4r07";
+            #    repo = "enhancd";
+            #    rev = "v2.2.4";
+            #    sha256 = "14lqgzqn5yvdk29fygs6s232j8sikifxxdzh86zas1h8n4lpf2z3";
+            #  };
+            # }
+            #  ];
+
   };
 
   programs.fzf.enable = true;
@@ -107,45 +104,45 @@
     # backgroundColor = "rgba()";
     colorsExtra = ''
 
-      # black
-      color0  = #1e2320
-      color8  = #709080
+    # black
+    color0  = #1e2320
+    color8  = #709080
 
-      # red
-      color1  = #705050
-      color9  = #dca3a3
+    # red
+    color1  = #705050
+    color9  = #dca3a3
 
-      # green
-      color2  = #60b48a
-      color10 = #c3bf9f
+    # green
+    color2  = #60b48a
+    color10 = #c3bf9f
 
-      # yellow
-      color3  = #dfaf8f
-      color11 = #f0dfaf
+    # yellow
+    color3  = #dfaf8f
+    color11 = #f0dfaf
 
-      # blue
-      color4  = #506070
-      color12 = #94bff3
+    # blue
+    color4  = #506070
+    color12 = #94bff3
 
-      # magenta
-      color5  = #dc8cc3
-      color13 = #ec93d3
+    # magenta
+    color5  = #dc8cc3
+    color13 = #ec93d3
 
-      # cyan
-      color6  = #8cd0d3
-      color14 = #93e0e3
+    # cyan
+    color6  = #8cd0d3
+    color14 = #93e0e3
 
-      # white
-      color7  = #dcdccc
-      color15 = #ffffff
+    # white
+    color7  = #dcdccc
+    color15 = #ffffff
 
-    '';
-    cursorBlink = "system";
-    cursorColor = "#ffffff";
-    cursorForegroundColor = "#ffffff";
-    cursorShape = "block";
-    font = "Iosevka 13";
-    foregroundBoldColor = "#ffffff";
+  '';
+  cursorBlink = "system";
+  cursorColor = "#ffffff";
+  cursorForegroundColor = "#ffffff";
+  cursorShape = "block";
+  font = "Iosevka 13";
+  foregroundBoldColor = "#ffffff";
 
   };
 
@@ -154,7 +151,21 @@
     enableBashIntegration = false;
     enableZshIntegration = true;
     settings = {
+      add_newline = false;
+      format = lib.concatStrings [
+        "$line_break"
+        "$package"
+        "$line_break"
+        "$character"
+      ];
+      scan_timeout = 10;
+      character = {
+        success_symbol = "➜(bold green)";
+        error_symbol = "[✗](bold red)";
+      };
+      cmake = {
 
+      };
     };
   };
 
@@ -163,4 +174,36 @@
     BROWSER = "brave";
     QT_XCB_GL_INTEGRATION = "none";
   };
+
+
+  services.gpg-agent = {
+    enable = true;
+
+    enableSshSupport = true;
+    defaultCacheTtl = 60;
+
+
+  };
+
+  programs =
+    {
+      dircolors = {
+        enable= true;
+        enableZshIntegration = true;
+      };
+      feh = {
+        enable = true;
+
+      };
+      firefox = {
+        enable = true;
+      };
+      gpg ={
+        enable = true;
+
+      };
+    };
+
+
+
 }
