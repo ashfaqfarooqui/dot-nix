@@ -1,6 +1,9 @@
 #+TITLE: Readme
 
 
+** Install cachix
+https://app.cachix.org/cache/nix-community
+
 ** Gopass
 #+begin_src sh
 gopass clone git@github.com:ashfaqfarooqui/pass.git
@@ -20,4 +23,19 @@ chsh -s $HOME/.nix-profile/bin/zsh
 git clone --depth 1 https://github.com/hlissner/doom-emacs ~/.emacs.d
 ~/.emacs.d/bin/doom install
 
+#+end_src
+
+Managing the config with nix is not straitforward. we would need to run =home-manager switch= as well as =doom sync= for an update to the config. Hence, we will link the .doom folder to the right place and manage it as a symbolic link.
+
+#+begin_src sh
+ln -s
+#+end_src
+*** pdf tools
+https://github.com/politza/pdf-tools/issues/647
+
+** Davmail
+
+The properties file will be updated with the token and hence must not be managed by nix.
+#+begin_src sh
+cp ./configs/davmail/.davmail.properties ~/
 #+end_src

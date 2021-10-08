@@ -14,6 +14,7 @@
     libreoffice
     evince
     okular
+    insync-v3
     copyq
 
   ];

@@ -24,6 +24,8 @@
     ./modules/nixos-desktop.nix
     ./modules/xmonad.nix
     ./modules/fonts.nix
+    ./modules/media.nix
+    ./modules/davmail.nix
   ];
 
   # This value determines the Home Manager release that your

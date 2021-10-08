@@ -30,7 +30,7 @@
     #zsh-powerlevel10k
     stow
     htop
-
+xclip
     oh-my-zsh
     fzf-zsh
   ];
@@ -64,7 +64,18 @@
       emulate zsh -c "$(direnv hook zsh)"
     '';
     # initExtraBeforeCompInit = builtins.readFile ../configs/zsh/.zshrc;
-
+    plugins = [
+      {
+        name = "zsh-nix-shell";
+        file = "nix-shell.plugin.zsh";
+        src = pkgs.fetchFromGitHub {
+          owner = "chisui";
+          repo = "zsh-nix-shell";
+          rev = "v0.4.0";
+          sha256 = "037wz9fqmx0ngcwl9az55fgkipb745rymznxnssr3rx9irb6apzg";
+        };
+      }
+    ];
     #plugins = [{
       #  # will source zsh-autosuggestions.plugin.zsh
       #  name = "zsh-syntax-highlighting";
@@ -153,12 +164,12 @@
     settings = {
       add_newline = false;
       format = lib.concatStrings [
-        "$line_break"
-        "$package"
+        "$directory"
+        "$all"
         "$line_break"
         "$character"
       ];
-      scan_timeout = 10;
+      scan_timeout = 20;
       character = {
         success_symbol = "➜(bold green)";
         error_symbol = "[✗](bold red)";
@@ -175,12 +186,11 @@
     QT_XCB_GL_INTEGRATION = "none";
   };
 
-
   services.gpg-agent = {
     enable = true;
-
+grabKeyboardAndMouse= false;
     enableSshSupport = true;
-    defaultCacheTtl = 60;
+    pinentryFlavor = "gnome3";
 
 
   };

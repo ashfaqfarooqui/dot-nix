@@ -6,5 +6,6 @@
     #    nix-top
     niv
     nixpkgs-fmt
+    cachix
   ];
 }
