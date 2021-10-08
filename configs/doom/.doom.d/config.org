@@ -1210,17 +1210,17 @@ This function creates an agenda of stuck projects that is restricted to my “Pr
                         (smtpmail-smtp-service . 465)
                         (mu4e-compose-signature . "---\nAshfaq Farooqui"))
                       t)
-  (set-email-account! "chalmers.se"
+  (set-email-account! "ri.se"
                       '(
-                        ( user-mail-address      . "ashfaqf@chalmers.se"  )
+                        ( user-mail-address      . "ashfaq.farooqui@ri.se"  )
                         ( user-full-name         . "Ashfaq Farooqui" )
-                        (mu4e-sent-folder       . "/chalmers.se/Sent Mail")
-                        (mu4e-drafts-folder     . "/chalmers.se/Drafts")
-                        (mu4e-trash-folder      . "/chalmers.se/Trash")
-                        (mu4e-refile-folder     . "/chalmers.se/All Mail")
-                        (smtpmail-smtp-user     . "ashfaqf@chalmers.se")
+                        (mu4e-sent-folder       . "/ri.se/Sent Mail")
+                        (mu4e-drafts-folder     . "/ri.se/Drafts")
+                        (mu4e-trash-folder      . "/ri.se/Trash")
+                        (mu4e-refile-folder     . "/ri.se/All Mail")
+                        (smtpmail-smtp-user     . "ashfaq.farooqui@ri.se")
                         ;;    (user-mail-address      . "ashfaq@ashfaqfarooqui.me")    ;; only needed for mu < 1.4
-                        (mu4e-attachment-dir . "~/Documents/MailAttachments/Chalmers")
+                        (mu4e-attachment-dir . "~/Documents/MailAttachments/RISE")
                         (mu4e-compose-signature . "//Ashfaq Farooqui")
                         ( smtpmail-smtp-server   . "localhost" )
                         (smtpmail-stream-type . nil )
