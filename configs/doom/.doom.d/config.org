@@ -669,7 +669,7 @@ some more misc settings
 
     (defun my/org-roam-refresh-agenda-list ()
       (interactive)
-      (setq org-agenda-files (my/org-roam-list-notes-by-tag "Project")))
+      (setq org-agenda-files (append (my/org-roam-list-notes-by-tag "Project") (my/org-roam-list-notes-by-tag "Area"))))
 
     ;; Build the agenda list the first time for the session
     (my/org-roam-refresh-agenda-list)
