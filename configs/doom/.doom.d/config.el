@@ -344,6 +344,12 @@ Single Capitals as you type."
 
   (setq org-special-ctrl-a/e t))
 
+(after! org
+  (add-to-list 'org-todo-keywords '(sequence "APT"))
+  (add-to-list 'org-todo-keyword-faces '(("APT" . +org-todo-active)))
+
+  )
+
 ; Tags with fast selection keys
 (after! org
 
@@ -496,10 +502,15 @@ Single Capitals as you type."
             (seq-filter
              (my/org-roam-filter-by-tag tag-name)
              (org-roam-node-list))))
-
-  (defun my/org-roam-refresh-agenda-list ()
+ (defun my/org-roam-refresh-agenda-list ()
     (interactive)
-    (setq org-agenda-files (append (my/org-roam-list-notes-by-tag "Project") (my/org-roam-list-notes-by-tag "Area"))))
+
+
+    (setq org-agenda-files (cl-remove-duplicates (append (my/org-roam-list-notes-by-tag "Project")
+                                                         (my/org-roam-list-notes-by-tag "Area")
+                                                         (my/org-roam-list-notes-by-tag "REFILE"))))
+
+    )
 
   ;; Build the agenda list the first time for the session
   (my/org-roam-refresh-agenda-list)
@@ -550,7 +561,7 @@ capture was not aborted."
     (interactive)
     (org-roam-capture- :node (org-roam-node-create)
                        :templates '(("i" "inbox" plain "* %?"
-                                     :if-new (file+head "Inbox.org" "#+title: Inbox\n")))))
+                                     :if-new (file+head "Inbox.org" "#+title: Inbox\n#+filetags: Inbox")))))
 
   (defun my/org-roam-capture-task ()
     (interactive)

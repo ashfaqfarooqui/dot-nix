@@ -1,6 +1,18 @@
 { config, pkgs, ... }:
+let
+  emacsOverlay = (import (builtins.fetchTarball {
+    url =
+      "https://github.com/nix-community/emacs-overlay/archive/master.tar.gz";
+  }));
+  rosOverlay = builtins.fetchTarball {
+    url =
+      "https://github.com/lopsided98/nix-ros-overlay/archive/6ed3fe9f34a9b44dc306bcc668ea70d0685d86be.tar.gz";
+  };
 
-{
+in {
+
+  nixpkgs.overlays = [ emacsOverlay (import (rosOverlay + "/overlay.nix")) ];
+
   # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;
 
@@ -10,9 +22,14 @@
   home.homeDirectory = "/home/ashfaqf";
   nixpkgs.config.allowUnfree = true;
   home.file.".config/nixpkgs/config.nix".text = ''
-    { allowUnfree = true; }
+    { allowUnfree = true;
+    }
   '';
+
+  home.packages = [ ];
+
   imports = [
+
     ./modules/cli.nix
     ./modules/emacs.nix
     ./modules/git.nix

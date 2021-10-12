@@ -7,5 +7,7 @@
     niv
     nixpkgs-fmt
     cachix
+    rnix-lsp
+    nixfmt
   ];
 }

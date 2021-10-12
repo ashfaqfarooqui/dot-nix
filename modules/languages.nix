@@ -10,4 +10,7 @@
     texlive.combined.scheme-full
   ];
 
+  services.lorri = {
+    enable = true;
+  };
 }

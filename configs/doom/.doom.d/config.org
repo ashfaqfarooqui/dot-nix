@@ -480,6 +480,18 @@ some more misc settings
 
   (setq org-special-ctrl-a/e t))
 #+END_SRC
+** Org-keywords
+#+begin_src emacs-lisp
+(after! org
+  (add-to-list 'org-todo-keywords '(sequence "APT"))
+  (add-to-list 'org-todo-keyword-faces '(("APT" . +org-todo-active)))
+
+  )
+#+end_src
+
+#+RESULTS:
+: (((APT . +org-todo-active)) ((APPT . +org-todo-active)) ([-] . +org-todo-active) (STRT . +org-todo-active) ([?] . +org-todo-onhold) (WAIT . +org-todo-onhold) (HOLD . +org-todo-onhold) (PROJ . +org-todo-project) (NO . +org-todo-cancel) (KILL . +org-todo-cancel))
+
 ** Org-tags
 #+BEGIN_SRC emacs-lisp
 ; Tags with fast selection keys
@@ -607,6 +619,7 @@ some more misc settings
 : 51DE2D88
 
 ** Org roam
+*** Capture templates
 #+BEGIN_SRC emacs-lisp
 
 
@@ -666,10 +679,15 @@ some more misc settings
               (seq-filter
                (my/org-roam-filter-by-tag tag-name)
                (org-roam-node-list))))
-
-    (defun my/org-roam-refresh-agenda-list ()
+   (defun my/org-roam-refresh-agenda-list ()
       (interactive)
-      (setq org-agenda-files (append (my/org-roam-list-notes-by-tag "Project") (my/org-roam-list-notes-by-tag "Area"))))
+
+
+      (setq org-agenda-files (cl-remove-duplicates (append (my/org-roam-list-notes-by-tag "Project")
+                                                           (my/org-roam-list-notes-by-tag "Area")
+                                                           (my/org-roam-list-notes-by-tag "REFILE"))))
+
+      )
 
     ;; Build the agenda list the first time for the session
     (my/org-roam-refresh-agenda-list)
@@ -720,7 +738,7 @@ some more misc settings
       (interactive)
       (org-roam-capture- :node (org-roam-node-create)
                          :templates '(("i" "inbox" plain "* %?"
-                                       :if-new (file+head "Inbox.org" "#+title: Inbox\n")))))
+                                       :if-new (file+head "Inbox.org" "#+title: Inbox\n#+filetags: Inbox")))))
 
     (defun my/org-roam-capture-task ()
       (interactive)
@@ -769,6 +787,9 @@ some more misc settings
          "b" #'my/org-roam-capture-inbox
          ))
 #+end_src
+
+#+RESULTS:
+: my/org-roam-capture-inbox
 
 *** org roam ui
 #+begin_src emacs-lisp
@@ -1237,9 +1258,6 @@ This function creates an agenda of stuck projects that is restricted to my “Pr
   )
 #+END_SRC
 
-#+RESULTS:
-| #s(mu4e-context w ashfaqf@chalmers.se (lambda nil (mu4e-message Enter ashfaqf@chalmers.se context)) (lambda nil (mu4e-message Leave ashfaqf@chalmers.se context)) (lambda (msg) (when msg (mu4e-message-contact-field-matches msg :to ashfaqf@chalmers.se))) ((user-mail-address . ashfaqf@chalmers.se) (user-full-name . Ashfaq Farooqui) (mu4e-drafts-folder . /Chalmers/Drafts) (mu4e-sent-folder . /Chalmers/Sent) (mu4e-trash-folder . /Chalmers/Trash) (mu4e-attachment-dir . ~/Documents/MailAttachments/Chalmers) (setq mu4e-sent-messages-behavior 'delete) (smtpmail-smtp-server . localhost) (smtpmail-stream-type) (smtpmail-smtp-service . 1025))) | #s(mu4e-context p ashfaq@ashfaqfarooqui.me (lambda nil (mu4e-message Enter ashfaq@ashfaqfarooqui.me context)) nil (lambda (msg) (when msg (mu4e-message-contact-field-matches msg :to ashfaq@ashfaqfarooqui.me))) ((user-mail-address . ashfaq@ashfaqfarooqui.me) (user-full-name . Ashfaq Farooqui) (smtpmail-smtp-user . ashfaq.farooqui@mailbox.org) (mu4e-sent-messages-behavior . sent) (mu4e-attachment-dir . ~/Documents/MailAttachments/Personal) (mu4e-drafts-folder . /Personal/Drafts) (mu4e-sent-folder . /Personal/Sent) (mu4e-trash-folder . /Personal/Trash) (mu4e-refile-folder . /Personal/Archive) (smtpmail-smtp-server . smtp.mailbox.org) (smtpmail-stream-type . ssl) (smtpmail-smtp-service . 465))) |
-
 *** MU4e attachments
 #+BEGIN_SRC emacs-lisp
 
@@ -1331,7 +1349,6 @@ This function creates an agenda of stuck projects that is restricted to my “Pr
 #+end_src
 
 #+RESULTS:
-: 2
 ** Nix
 #+begin_src emacs-lisp
 (after! lsp-mode

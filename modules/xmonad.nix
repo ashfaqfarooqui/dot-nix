@@ -12,14 +12,17 @@
       haskellPackages.extra
     ];
   };
-  xsession.enable = true;
-  xsession.pointerCursor = {
-    package = pkgs.vanilla-dmz;
-    name = "Vanilla-DMZ";
-    size = 32;
 
+
+  xsession = {
+    enable = true;
+
+    pointerCursor = {
+      package = pkgs.vanilla-dmz;
+      name = "Vanilla-DMZ";
+      size = 32;
+    };
   };
-
   home.packages = with pkgs; [
     xmobar
 

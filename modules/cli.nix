@@ -33,12 +33,13 @@
 xclip
     oh-my-zsh
     fzf-zsh
+direnv
   ];
 
   programs.direnv = {
     enable = true;
-    enableZshIntegration = false;
-    # enableNixDirenvIntegration = true;
+    enableZshIntegration = true;
+nix-direnv.enable = true;
   };
 
   programs.zsh = {
