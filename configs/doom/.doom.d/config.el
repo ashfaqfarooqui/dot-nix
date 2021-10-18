@@ -1073,8 +1073,8 @@ is already narrowed."
 (after! lsp-clangd (set-lsp-priority! 'clangd 2))
 
 
-                            (require 'dap-cpptools)
-(setq dap-auto-configure-features '(sessions locals controls tooltip))
+;                            (require 'dap-cpptools)
+;(setq dap-auto-configure-features '(sessions locals controls tooltip))
 
 )
 

@@ -12,9 +12,7 @@
     nerdfonts
     ibm-plex
     overpass
-    clang
 
-    coreutils
     (makeDesktopItem {
       name = "org-protocol";
       exec = "emacsclient %u";

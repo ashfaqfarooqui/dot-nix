@@ -152,18 +152,18 @@
        ;;fstar             ; (dependent) types and (monadic) effects and Z3
        ;;gdscript          ; the language you waited for
        ;;(go +lsp)         ; the hipster dialect
-       (haskell +lsp)  ; a language that's lazier than I am
+;;       (haskell +lsp)  ; a language that's lazier than I am
        ;;hy                ; readability of scheme w/ speed of python
        ;;idris             ;
-       (json +lsp)              ; At least it ain't XML
-       (java +lsp) ; the poster child for carpal tunnel syndrome
+       ;(json +lsp)              ; At least it ain't XML
+       ;(java +lsp) ; the poster child for carpal tunnel syndrome
        ;;javascript        ; all(hope(abandon(ye(who(enter(here))))))
        ;;julia             ; a better, faster MATLAB
        ;;kotlin            ; a better, slicker Java(Script)
-       (latex
-        +latexmk
-        +cdlatex
-        +fold)             ; writing papers in Emacs has never been so fun
+       ;(latex
+       ; +latexmk
+       ; +cdlatex
+       ; +fold)             ; writing papers in Emacs has never been so fun
        ;;lean
        ;;factor
        ledger            ; an accounting system in Emacs
@@ -185,15 +185,15 @@
        ;;php               ; perl's insecure younger brother
        ;;plantuml          ; diagrams for confusing people more
        ;;purescript        ; javascript, but functional
-       python            ; beautiful is better than ugly
+       ;python            ; beautiful is better than ugly
        ;;qt                ; the 'cutest' gui framework ever
        ;;racket            ; a DSL for DSLs
        ;;raku              ; the artist formerly known as perl6
        ;;rest              ; Emacs as a REST client
        ;;rst               ; ReST in peace
        ;;(ruby +rails)     ; 1.step {|i| p "Ruby is #{i.even? ? 'love' : 'life'}"}
-       (rust +lsp)         ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
-       (scala +lsp)             ; java, but good
+       ;(rust +lsp)         ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
+       ;(scala +lsp)             ; java, but good
        ;;scheme            ; a fully conniving family of lisps
        (sh +lsp)                ; she sells {ba,z,fi}sh shells on the C xor
        ;;sml

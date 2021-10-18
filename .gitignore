@@ -1,2 +1,3 @@
 /config.nix
 configs/doom/.doom.d/config.el
+/configs/doom/.doom.d/custom.el

@@ -81,7 +81,6 @@
 ;;(package! flyspell-lazy)
 ;;(package! elfeed-goodies)
 (package! lexic)
-
 ;(package! holy-books :recipe (:local-repo "lisp/holy-books"))
 (package! info-colors)
 ;; Testing the org fold branch

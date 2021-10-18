@@ -1341,8 +1341,8 @@ This function creates an agenda of stuck projects that is restricted to my “Pr
 (after! lsp-clangd (set-lsp-priority! 'clangd 2))
 
 
-                            (require 'dap-cpptools)
-(setq dap-auto-configure-features '(sessions locals controls tooltip))
+;                            (require 'dap-cpptools)
+;(setq dap-auto-configure-features '(sessions locals controls tooltip))
 
 )
 

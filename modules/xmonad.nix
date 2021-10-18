@@ -13,14 +13,13 @@
     ];
   };
 
-
   xsession = {
     enable = true;
 
     pointerCursor = {
       package = pkgs.vanilla-dmz;
       name = "Vanilla-DMZ";
-      size = 32;
+      size = 64;
     };
   };
   home.packages = with pkgs; [
@@ -45,7 +44,5 @@
 
   targets.genericLinux.enable = true;
 
-  programs.autorandr = {
-    enable = true;
-  };
+  programs.autorandr = { enable = true; };
 }
