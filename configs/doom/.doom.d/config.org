@@ -618,6 +618,7 @@ some more misc settings
 #+RESULTS:
 : 51DE2D88
 
+** Org agenda
 ** Org roam
 *** Capture templates
 #+BEGIN_SRC emacs-lisp
@@ -679,18 +680,26 @@ some more misc settings
               (seq-filter
                (my/org-roam-filter-by-tag tag-name)
                (org-roam-node-list))))
-   (defun my/org-roam-refresh-agenda-list ()
+
+
+
+    (defun my/org-roam-refresh-agenda-list ()
       (interactive)
 
 
+
       (setq org-agenda-files (cl-remove-duplicates (append (my/org-roam-list-notes-by-tag "Project")
-                                                           (my/org-roam-list-notes-by-tag "Area")
-                                                           (my/org-roam-list-notes-by-tag "REFILE"))))
+                                          (my/org-roam-list-notes-by-tag "Area")
+                                          (my/org-roam-list-notes-by-tag "REFILE")
+                                          (list (concat org-roam-directory org-roam-dailies-directory))) :test 'string=)
+)
 
       )
 
     ;; Build the agenda list the first time for the session
     (my/org-roam-refresh-agenda-list)
+
+
 
     (defun my/org-roam-project-finalize-hook ()
       "Adds the captured project file to `org-agenda-files' if the
@@ -961,8 +970,7 @@ is already narrowed."
 
 (after! magit
 
- (setq magit-repository-directories '(("~/Code" . 2) ("~/Papers" . 2))
-      magit-save-repository-buffers nil
+ (setq       magit-save-repository-buffers nil
       ;; Don't restore the wconf after quitting magit, it's jarring
       magit-inhibit-save-previous-winconf t
       transient-values '((magit-commit "--gpg-sign=7A804BCB51DE2D88")
@@ -1024,7 +1032,6 @@ is already narrowed."
       :n "S" #'elfeed-search-set-filter
       :n "b" #'elfeed-search-browse-url
       :n "y" #'elfeed-search-yank
-      :n "e" #'prot/elfeed-show-eww
         )
 
 (map! :map elfeed-show-mode-map
@@ -1219,7 +1226,7 @@ This function creates an agenda of stuck projects that is restricted to my “Pr
                       '(
                         ( user-mail-address      . "ashfaq@ashfaqfarooqui.me"  )
                         ( user-full-name         . "Ashfaq Farooqui" )
-                        (mu4e-sent-folder       . "/ashfaqfarooqui.me/Sent Mail")
+                        (mu4e-sent-folder       . "/ashfaqfarooqui.me/Sent")
                         (mu4e-drafts-folder     . "/ashfaqfarooqui.me/Drafts")
                         (mu4e-trash-folder      . "/ashfaqfarooqui.me/Trash")
                         (mu4e-refile-folder     . "/ashfaqfarooqui.me/All Mail")
@@ -1241,7 +1248,7 @@ This function creates an agenda of stuck projects that is restricted to my “Pr
                         (mu4e-refile-folder     . "/ri.se/All Mail")
                         (smtpmail-smtp-user     . "ashfaq.farooqui@ri.se")
                         ;;    (user-mail-address      . "ashfaq@ashfaqfarooqui.me")    ;; only needed for mu < 1.4
-                        (mu4e-attachment-dir . "~/Documents/MailAttachments/RISE")
+                        (mu4e-attachment-dir . "~/Documents/MailAttachments/ri.se")
                         (mu4e-compose-signature . "//Ashfaq Farooqui")
                         ( smtpmail-smtp-server   . "localhost" )
                         (smtpmail-stream-type . nil )

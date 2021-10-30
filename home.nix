@@ -26,7 +26,7 @@ in {
     }
   '';
 
-  home.packages = [ ];
+  home.packages = [ pkgs.sqlitebrowser ];
 
   imports = [
 

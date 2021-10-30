@@ -1,6 +1,6 @@
 ;; -*- lexical-binding: t; -*-
 
-(setq user-full-name "Ashfaq Farooqui")
+     (setq user-full-name "Ashfaq Farooqui")
      (setq user-mail-address "ashfaq@ashfaqfarooqui.me")
 
 (setq auth-sources '("~/.authinfo.gpg")
@@ -169,9 +169,9 @@
   :after rainbow-delimiter
 :init (rainbow-mode))
 
-(after! nyan-mode
-     :init
-    (nyan-mode))
+    (after! nyan-mode
+         :init
+        (nyan-mode))
 
 (setq display-line-numbers-type 'relative)
 
@@ -185,24 +185,24 @@
 (setq super-save-auto-save-when-idle t)
 )
 
-(add-hook! org-mode :append
-           #'visual-line-mode)
+        (add-hook! org-mode :append
+                   #'visual-line-mode)
 
-(add-hook! text-mode :append
-           #'visual-line-mode)
+        (add-hook! text-mode :append
+                   #'visual-line-mode)
 
-(add-hook! latex-mode :append
-           #'visual-line-mode)
+        (add-hook! latex-mode :append
+                   #'visual-line-mode)
 
-(use-package! visual-fill-column
-  :config
-  (add-hook 'visual-line-mode-hook #'visual-fill-column-mode)
-  (advice-add 'text-scale-adjust :after
-              #'visual-fill-column-adjust)
-  (setq visual-fill-column-width 100)
-  (setq-default fill-column 100)
-  (setq visual-fill-column-center-text t)
-  )
+        (use-package! visual-fill-column
+          :config
+          (add-hook 'visual-line-mode-hook #'visual-fill-column-mode)
+          (advice-add 'text-scale-adjust :after
+                      #'visual-fill-column-adjust)
+          (setq visual-fill-column-width 100)
+          (setq-default fill-column 100)
+          (setq visual-fill-column-center-text t)
+          )
 
 (after! smartparens
   :config
@@ -380,7 +380,7 @@ Single Capitals as you type."
   ;; will add the new entry as a child entry.
   (goto-char (point-min)))
 
-(after! org   (setq org-capture-templates
+   (after! org   (setq org-capture-templates
             (quote (
 
                     ("p" "Protocol" entry (file+headline org-inbox-file "Links")
@@ -482,133 +482,141 @@ Single Capitals as you type."
 
   )
 
-;; Taking things from system crafters
-(after! org-roam
-  (require 'org-roam-dailies) ;; Ensure the keymap is available
+  ;; Taking things from system crafters
+  (after! org-roam
+    (require 'org-roam-dailies) ;; Ensure the keymap is available
 
-  (defun org-roam-node-insert-immediate (arg &rest args)
-    (interactive "P")
-    (let ((args (push arg args))
-          (org-roam-capture-templates (list (append (car org-roam-capture-templates)
-                                                    '(:immediate-finish t)))))
-      (apply #'org-roam-node-insert args)))
+    (defun org-roam-node-insert-immediate (arg &rest args)
+      (interactive "P")
+      (let ((args (push arg args))
+            (org-roam-capture-templates (list (append (car org-roam-capture-templates)
+                                                      '(:immediate-finish t)))))
+        (apply #'org-roam-node-insert args)))
 
-  (defun my/org-roam-filter-by-tag (tag-name)
-    (lambda (node)
-      (member tag-name (org-roam-node-tags node))))
+    (defun my/org-roam-filter-by-tag (tag-name)
+      (lambda (node)
+        (member tag-name (org-roam-node-tags node))))
 
-  (defun my/org-roam-list-notes-by-tag (tag-name)
-    (mapcar #'org-roam-node-file
-            (seq-filter
-             (my/org-roam-filter-by-tag tag-name)
-             (org-roam-node-list))))
- (defun my/org-roam-refresh-agenda-list ()
-    (interactive)
+    (defun my/org-roam-list-notes-by-tag (tag-name)
+      (mapcar #'org-roam-node-file
+              (seq-filter
+               (my/org-roam-filter-by-tag tag-name)
+               (org-roam-node-list))))
 
 
-    (setq org-agenda-files (cl-remove-duplicates (append (my/org-roam-list-notes-by-tag "Project")
-                                                         (my/org-roam-list-notes-by-tag "Area")
-                                                         (my/org-roam-list-notes-by-tag "REFILE"))))
+
+    (defun my/org-roam-refresh-agenda-list ()
+      (interactive)
+
+
+
+      (setq org-agenda-files (cl-remove-duplicates (append (my/org-roam-list-notes-by-tag "Project")
+                                          (my/org-roam-list-notes-by-tag "Area")
+                                          (my/org-roam-list-notes-by-tag "REFILE")
+                                          (list (concat org-roam-directory org-roam-dailies-directory))) :test 'string=)
+)
+
+      )
+
+    ;; Build the agenda list the first time for the session
+    (my/org-roam-refresh-agenda-list)
+
+
+
+    (defun my/org-roam-project-finalize-hook ()
+      "Adds the captured project file to `org-agenda-files' if the
+  capture was not aborted."
+      ;; Remove the hook since it was added temporarily
+      (remove-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
+
+      ;; Add project file to the agenda list if the capture was confirmed
+      (unless org-note-abort
+        (with-current-buffer (org-capture-get :buffer)
+          (add-to-list 'org-agenda-files (buffer-file-name)))))
+
+    (defun my/org-roam-find-area ()
+      (interactive)
+      ;; Add the project file to the agenda after capture is finished
+      (add-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
+
+      ;; Select a project file to open, creating it if necessary
+      (org-roam-node-find
+       nil
+       nil
+       (my/org-roam-filter-by-tag "Area")
+       :templates
+       '(("a" "area" plain "\n"
+          :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: Area")
+          :unnarrowed t))))
+
+
+    (defun my/org-roam-find-project ()
+      (interactive)
+      ;; Add the project file to the agenda after capture is finished
+      (add-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
+
+      ;; Select a project file to open, creating it if necessary
+      (org-roam-node-find
+       nil
+       nil
+       (my/org-roam-filter-by-tag "Project")
+       :templates
+       '(("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
+          :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: Project")
+          :unnarrowed t))))
+
+    (defun my/org-roam-capture-inbox ()
+      (interactive)
+      (org-roam-capture- :node (org-roam-node-create)
+                         :templates '(("i" "inbox" plain "* %?"
+                                       :if-new (file+head "Inbox.org" "#+title: Inbox\n#+filetags: Inbox")))))
+
+    (defun my/org-roam-capture-task ()
+      (interactive)
+      ;; Add the project file to the agenda after capture is finished
+      (add-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
+
+      ;; Capture the new task, creating the project file if necessary
+      (org-roam-capture- :node (org-roam-node-read
+                                nil
+                                (my/org-roam-filter-by-tag "Project"))
+                         :templates '(("p" "project" plain "** TODO %?"
+                                       :if-new (file+head+olp "%<%Y%m%d%H%M%S>-${slug}.org"
+                                                              "#+title: ${title}\n#+category: ${title}\n#+filetags: Project"
+                                                              ("Tasks"))))))
+
+    (defun my/org-roam-copy-todo-to-today ()
+      (interactive)
+      (let ((org-refile-keep t) ;; Set this to nil to delete the original!
+            (org-roam-dailies-capture-templates
+             '(("t" "tasks" entry "%?"
+                :if-new (file+head+olp "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>\n" ("Tasks")))))
+            (org-after-refile-insert-hook #'save-buffer)
+            today-file
+            pos)
+        (save-window-excursion
+          (org-roam-dailies--capture (current-time) t)
+          (setq today-file (buffer-file-name))
+          (setq pos (point)))
+
+        ;; Only refile if the target file is different than the current file
+        (unless (equal (file-truename today-file)
+                       (file-truename (buffer-file-name)))
+          (org-refile nil nil (list "Tasks" today-file nil pos)))))
+
+    (add-to-list 'org-after-todo-state-change-hook
+                 (lambda ()
+                   (when (equal org-state "DONE")
+                     (my/org-roam-copy-todo-to-today))))
 
     )
-
-  ;; Build the agenda list the first time for the session
-  (my/org-roam-refresh-agenda-list)
-
-  (defun my/org-roam-project-finalize-hook ()
-    "Adds the captured project file to `org-agenda-files' if the
-capture was not aborted."
-    ;; Remove the hook since it was added temporarily
-    (remove-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
-
-    ;; Add project file to the agenda list if the capture was confirmed
-    (unless org-note-abort
-      (with-current-buffer (org-capture-get :buffer)
-        (add-to-list 'org-agenda-files (buffer-file-name)))))
-
-  (defun my/org-roam-find-area ()
-    (interactive)
-    ;; Add the project file to the agenda after capture is finished
-    (add-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
-
-    ;; Select a project file to open, creating it if necessary
-    (org-roam-node-find
-     nil
-     nil
-     (my/org-roam-filter-by-tag "Area")
-     :templates
-     '(("a" "area" plain "\n"
-        :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: Area")
-        :unnarrowed t))))
-
-
-  (defun my/org-roam-find-project ()
-    (interactive)
-    ;; Add the project file to the agenda after capture is finished
-    (add-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
-
-    ;; Select a project file to open, creating it if necessary
-    (org-roam-node-find
-     nil
-     nil
-     (my/org-roam-filter-by-tag "Project")
-     :templates
-     '(("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
-        :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: Project")
-        :unnarrowed t))))
-
-  (defun my/org-roam-capture-inbox ()
-    (interactive)
-    (org-roam-capture- :node (org-roam-node-create)
-                       :templates '(("i" "inbox" plain "* %?"
-                                     :if-new (file+head "Inbox.org" "#+title: Inbox\n#+filetags: Inbox")))))
-
-  (defun my/org-roam-capture-task ()
-    (interactive)
-    ;; Add the project file to the agenda after capture is finished
-    (add-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
-
-    ;; Capture the new task, creating the project file if necessary
-    (org-roam-capture- :node (org-roam-node-read
-                              nil
-                              (my/org-roam-filter-by-tag "Project"))
-                       :templates '(("p" "project" plain "** TODO %?"
-                                     :if-new (file+head+olp "%<%Y%m%d%H%M%S>-${slug}.org"
-                                                            "#+title: ${title}\n#+category: ${title}\n#+filetags: Project"
-                                                            ("Tasks"))))))
-
-  (defun my/org-roam-copy-todo-to-today ()
-    (interactive)
-    (let ((org-refile-keep t) ;; Set this to nil to delete the original!
-          (org-roam-dailies-capture-templates
-           '(("t" "tasks" entry "%?"
-              :if-new (file+head+olp "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>\n" ("Tasks")))))
-          (org-after-refile-insert-hook #'save-buffer)
-          today-file
-          pos)
-      (save-window-excursion
-        (org-roam-dailies--capture (current-time) t)
-        (setq today-file (buffer-file-name))
-        (setq pos (point)))
-
-      ;; Only refile if the target file is different than the current file
-      (unless (equal (file-truename today-file)
-                     (file-truename (buffer-file-name)))
-        (org-refile nil nil (list "Tasks" today-file nil pos)))))
-
-  (add-to-list 'org-after-todo-state-change-hook
-               (lambda ()
-                 (when (equal org-state "DONE")
-                   (my/org-roam-copy-todo-to-today))))
-
-  )
-(map! :leader
-      (:prefix-map ("r" . "personal")
-       "a" #'my/org-roam-find-area
-       "p" #'my/org-roam-find-project
-       "t" #'my/org-roam-capture-task
-       "b" #'my/org-roam-capture-inbox
-       ))
+  (map! :leader
+        (:prefix-map ("r" . "personal")
+         "a" #'my/org-roam-find-area
+         "p" #'my/org-roam-find-project
+         "t" #'my/org-roam-capture-task
+         "b" #'my/org-roam-capture-inbox
+         ))
 
 (use-package! websocket
     :after org-roam)
@@ -745,8 +753,7 @@ is already narrowed."
 
 (after! magit
 
- (setq magit-repository-directories '(("~/Code" . 2) ("~/Papers" . 2))
-      magit-save-repository-buffers nil
+ (setq       magit-save-repository-buffers nil
       ;; Don't restore the wconf after quitting magit, it's jarring
       magit-inhibit-save-previous-winconf t
       transient-values '((magit-commit "--gpg-sign=7A804BCB51DE2D88")
@@ -800,7 +807,6 @@ is already narrowed."
       :n "S" #'elfeed-search-set-filter
       :n "b" #'elfeed-search-browse-url
       :n "y" #'elfeed-search-yank
-      :n "e" #'prot/elfeed-show-eww
         )
 
 (map! :map elfeed-show-mode-map
@@ -963,7 +969,7 @@ is already narrowed."
                       '(
                         ( user-mail-address      . "ashfaq@ashfaqfarooqui.me"  )
                         ( user-full-name         . "Ashfaq Farooqui" )
-                        (mu4e-sent-folder       . "/ashfaqfarooqui.me/Sent Mail")
+                        (mu4e-sent-folder       . "/ashfaqfarooqui.me/Sent")
                         (mu4e-drafts-folder     . "/ashfaqfarooqui.me/Drafts")
                         (mu4e-trash-folder      . "/ashfaqfarooqui.me/Trash")
                         (mu4e-refile-folder     . "/ashfaqfarooqui.me/All Mail")
@@ -985,7 +991,7 @@ is already narrowed."
                         (mu4e-refile-folder     . "/ri.se/All Mail")
                         (smtpmail-smtp-user     . "ashfaq.farooqui@ri.se")
                         ;;    (user-mail-address      . "ashfaq@ashfaqfarooqui.me")    ;; only needed for mu < 1.4
-                        (mu4e-attachment-dir . "~/Documents/MailAttachments/RISE")
+                        (mu4e-attachment-dir . "~/Documents/MailAttachments/ri.se")
                         (mu4e-compose-signature . "//Ashfaq Farooqui")
                         ( smtpmail-smtp-server   . "localhost" )
                         (smtpmail-stream-type . nil )
@@ -1001,7 +1007,7 @@ is already narrowed."
 
   )
 
-;;;Taking the below from [[http://mbork.pl/2016-02-06_An_attachment_reminder_in_mu4e]]
+       ;;;Taking the below from [[http://mbork.pl/2016-02-06_An_attachment_reminder_in_mu4e]]
 (after! mu4e
     (defun mbork/message-attachment-present-p ()
       "Return t if an attachment is found in the current message."
