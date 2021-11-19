@@ -397,7 +397,7 @@ Single Capitals as you type."
 
 
 * Org Mode
-** COMMENT Org appear
+** Org appear
 #+begin_src emacs-lisp
 
 (use-package! org-appear
@@ -545,25 +545,17 @@ some more misc settings
                      "* %^{Title}\nCaptured On: %U\nSource: %u, %c\n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?")
                     ("L" "Protocol Link" entry (file+headline org-inbox-file "Links")
                      "* %? [[%:link][%:description]] \nCaptured On: %U")
-
-                    ("P" "Project" entry (file+headline org-basb-main-file "Projects")
-                     (file "~/.doom.d/templates/newProjecttemplate.org") :empty-lines 1)
-
-                    ("s" "Someday" entry (file+headline (concat (org-file-path "BASB/somedaymaybe.org" "Someday")))
-                     "* %?\n")
-                    ("m" "Maybe" entry (file+headline (concat (org-file-path "BASB/somedaymaybe.org" "Maybe")))
-                     "* %?\n")
-
-
-                    ("n" "Notes"
+ ("l" "link" entry (file+headline  org-inbox-file "Links")
+         "* TODO %(org-cliplink-capture)" :immediate-finish t)
+                    ("i" "Inbox"
                      entry
-                     (file+headline org-inbox-file "Notes")
-                     "* %u %? :NOTE:\n")
+                     (file org-inbox-file)
+                     "* %u %? \n :\n:PROPERTIES:\n:CREATED: %U\n:END:")
 
                     ("t" "Task"
                      entry
                      (file+headline org-inbox-file "Tasks")
-                     "* TODO %?\n")
+                     "* TODO %? \n :PROPERTIES:\n:CREATED: %U\n:END:")
 
                      ("h" "health log")
                     ("hr" "Running" entry (file+headline  "~/Orgs/BASB/Areas/Health/log.org" "Running")
@@ -572,9 +564,15 @@ some more misc settings
                     ("hs" "Sleep" entry (file+headline  "~/Orgs/BASB/Areas/Health/log.org" "Sleep")
                      (file "~/.doom.d/templates/sleep.org") :empty-lines 1)
 
+                    ("e" "Email" entry (file+headline org-inbox-file "Reply to Mail")
+                     "* TODO Process email |- %:from: :: %:subject :EMAIL:\n:PROPERTIES:\n:CREATED: %U\n:EMAIL-SOURCE: %l\n:END:\n\n
+,#+begin_quote \n
+%i
+,#+end_quote\n
 
-                    ("e" "Email" entry (file+headline org-inbox-file "Mail")
-                     "* TODO %? email |- %:from: %:subject :EMAIL:\n:PROPERTIES:\n:CREATED: %U\n:EMAIL-SOURCE: %l\n:END:\n%U\n" )
+%?
+                " )
+
 
 
 
@@ -600,7 +598,7 @@ some more misc settings
 #+END_SRC
 
 #+RESULTS:
-| p | Protocol | entry | (file+headline org-index-file Links) | * %^{Title} |
+| p | Protocol | entry | (file+headline org-inbox-file Links) | * %^{Title} |
 
 ** Encryption
 #+BEGIN_SRC emacs-lisp
@@ -619,6 +617,15 @@ some more misc settings
 : 51DE2D88
 
 ** Org agenda
+** Org download
+#+begin_src emacs-lisp
+(setq org-download-screenshot-method "scrot -s %s")
+
+#+end_src
+
+#+RESULTS:
+: scrot -s %s
+
 ** Org roam
 *** Capture templates
 #+BEGIN_SRC emacs-lisp
@@ -631,38 +638,60 @@ some more misc settings
            :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
                               "#+title: ${title}\n#+Date: %t")
            :unnarrowed t)
-          ("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
+          ("p" "project" plain (file "templates/newProjectTemplate.org")
            :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: Project")
            :unnarrowed t)
-          ("c" "Cooking" plain "%?"
-           :if-new (file+head "$Areas/Cooking/%<%Y%m%d%H%M%S>-${slug}.org"
-                              "#+title: ${title}\n#+Date: %t")
-           :unnarrowed t)
-          ("p" "People" plain "%?"
-           :if-new (file+head "References/People/${slug}.org"
-                              "#+title: ${title}\n")
-           :unnarrowed t)
-          ("i" "Religion")
+         ("i" "Religion")
           ("in" "note" plain "%?"
-           :if-new (file+head "Areas/Religion/%<%Y%m%d%H%M%S>-${slug}.org"
+           :if-new (file+head "Area/Islam/%<%Y%m%d%H%M%S>-${slug}.org"
                               "#title: ${title}\n")
            :unnarrowed t)
 
           ("ik" "Kuthbah" plain "%?"
-           :if-new (file+head) "Areas/Religion/Khutba/%<%Y%m%d%H%M%S>-${slug}.org" "#title: ${title}\n#+Date: %(org-read-date nil nil nil)")
+           :if-new (file+head) "Area/Islam/Khutba/%<%Y%m%d%H%M%S>-${slug}.org" "#title: ${title}\n#+Date: %(org-read-date nil nil nil)")
           )
 
         )
 
 
   )
-
 #+END_SRC
+
+#+RESULTS:
+| d | default | plain | %? | :if-new | (file+head %<%Y%m%d%H%M%S>-${slug}.org #+title: ${title} |
+
 *** some additions from system crafters
 #+begin_src emacs-lisp
   ;; Taking things from system crafters
   (after! org-roam
     (require 'org-roam-dailies) ;; Ensure the keymap is available
+
+    ;;(add-to-list 'org-tags-exclude-from-inheritance "Project")
+
+    (defun my/roam-filter-by-tag (ta)
+      "Return a list of note files containing tag." ;
+      (seq-uniq
+       (seq-map
+        #'car
+        (org-roam-db-query
+         [:select [nodes:file]
+          :from tags
+          :left-join nodes
+          :on (= tags:node-id nodes:id)
+          :where (like tag $s1)] ta )))
+      )
+
+
+    (defun my/roam-get-project-files ()
+      "Return a list of note files containing project tag." ;
+      (my/roam-filter-by-tag "Project"))
+
+    (defun my/roam-get-area-files ()
+      "Return a list of note files containing area tag." ;
+
+      (my/roam-filter-by-tag "Area"))
+
+
 
     (defun org-roam-node-insert-immediate (arg &rest args)
       (interactive "P")
@@ -682,26 +711,7 @@ some more misc settings
                (org-roam-node-list))))
 
 
-
-    (defun my/org-roam-refresh-agenda-list ()
-      (interactive)
-
-
-
-      (setq org-agenda-files (cl-remove-duplicates (append (my/org-roam-list-notes-by-tag "Project")
-                                          (my/org-roam-list-notes-by-tag "Area")
-                                          (my/org-roam-list-notes-by-tag "REFILE")
-                                          (list (concat org-roam-directory org-roam-dailies-directory))) :test 'string=)
-)
-
-      )
-
-    ;; Build the agenda list the first time for the session
-    (my/org-roam-refresh-agenda-list)
-
-
-
-    (defun my/org-roam-project-finalize-hook ()
+   (defun my/org-roam-project-finalize-hook ()
       "Adds the captured project file to `org-agenda-files' if the
   capture was not aborted."
       ;; Remove the hook since it was added temporarily
@@ -739,29 +749,9 @@ some more misc settings
        nil
        (my/org-roam-filter-by-tag "Project")
        :templates
-       '(("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
+       '(("p" "project" plain (file "~/.doom.d/templates/newProjecttemplate.org")
           :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: Project")
           :unnarrowed t))))
-
-    (defun my/org-roam-capture-inbox ()
-      (interactive)
-      (org-roam-capture- :node (org-roam-node-create)
-                         :templates '(("i" "inbox" plain "* %?"
-                                       :if-new (file+head "Inbox.org" "#+title: Inbox\n#+filetags: Inbox")))))
-
-    (defun my/org-roam-capture-task ()
-      (interactive)
-      ;; Add the project file to the agenda after capture is finished
-      (add-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
-
-      ;; Capture the new task, creating the project file if necessary
-      (org-roam-capture- :node (org-roam-node-read
-                                nil
-                                (my/org-roam-filter-by-tag "Project"))
-                         :templates '(("p" "project" plain "** TODO %?"
-                                       :if-new (file+head+olp "%<%Y%m%d%H%M%S>-${slug}.org"
-                                                              "#+title: ${title}\n#+category: ${title}\n#+filetags: Project"
-                                                              ("Tasks"))))))
 
     (defun my/org-roam-copy-todo-to-today ()
       (interactive)
@@ -799,7 +789,6 @@ some more misc settings
 
 #+RESULTS:
 : my/org-roam-capture-inbox
-
 *** org roam ui
 #+begin_src emacs-lisp
 (use-package! websocket
@@ -825,9 +814,15 @@ some more misc settings
 ** Deft
 #+begin_src emacs-lisp
 
-(setq deft-directory org-roam-directory)
-
+  (setq deft-default-extension "org")
+(setq deft-directory org-roam-directory
+          deft-recursive t
+          deft-strip-summary-regexp ":PROPERTIES:\n\\(.+\n\\)+:END:\n"
+          deft-use-filename-as-title t)
 #+end_src
+
+#+RESULTS:
+: t
 
 ** Surround region with emphasis or syntax characters
 Define and bind interactive commands for each of KEYS that surround the region or insert text. Commands are bound in org-mode-map to each of KEYS. If the region is active, commands surround it with the key character, otherwise call org-self-insert-command.
@@ -862,6 +857,11 @@ otherwise call `org-self-insert-command'."
 
 (unpackaged/def-org-maybe-surround "~" "=" "*" "/" "+"))
 #+END_SRC
+** org-attach
+#+begin_src emacs-lisp
+
+;(setq org-attach-id-dir "./.attach")
+#+end_src
 ** Exporting (general)
 #+begin_src emacs-lisp
 (after! org (setq org-export-headline-levels 5)) ; I like nesting
@@ -963,6 +963,49 @@ is already narrowed."
 #+END_SRC
 
 * Applications
+** GTD with org roam
+Taking inspiration from [[https://github.com/rougier/emacs-gtd][GitHub - rougier/emacs-gtd: Get Things Done with Emacs]]
+
+#+begin_src emacs-lisp
+(after! org
+(defun org-capture-mail ()
+  (interactive)
+  (call-interactively 'org-store-link)
+  (org-capture nil "e"))
+
+(map! :map mu4e-headers-mode-map
+      :ne "p" 'org-capture-mail)
+
+(map! :map mu4e-view-mode-map
+      :ne "p" 'org-capture-mail)
+
+
+)
+#+end_src
+
+*** agenda
+#+begin_src emacs-lisp
+
+    (defun my/org-roam-refresh-agenda-list ()
+      (interactive)
+
+
+
+      (setq org-agenda-files (append (my/roam-get-project-files)
+                                     (my/roam-get-area-files)
+                                     (my/roam-filter-by-tag "REFILE")
+                                     ))
+
+      (add-to-list 'org-agenda-files org-inbox-file)
+      (add-to-list 'org-agenda-files org-inbox-orgzly-file)
+      )
+
+    ;; Build the agenda list the first time for the session
+    (my/org-roam-refresh-agenda-list)
+#+end_src
+
+#+RESULTS:
+| ~/Nextcloud/Docs/inbox-orgzly.org | ~/Nextcloud/Docs/inbox.org | /home/ashfaqf/Nextcloud/Docs/Roam/20211001205359-mides.org | /home/ashfaqf/Nextcloud/Docs/Roam/20211104224007-passport_and_visa.org | /home/ashfaqf/Nextcloud/Docs/Roam/20211010125752-udacity_c.org | /home/ashfaqf/Nextcloud/Docs/Roam/20211109121421-readwise_org_mode_export_plugin.org | /home/ashfaqf/Nextcloud/Docs/Roam/Area/Islam/Illumine/20210920074451-surah_57_al_hadid.org | /home/ashfaqf/Nextcloud/Docs/Roam/20210917183532-lash_fire.org | /home/ashfaqf/Nextcloud/Docs/Roam/20211104224418-building_a_second_brain_course.org | /home/ashfaqf/Nextcloud/Docs/Roam/20210919120627-health.org | /home/ashfaqf/Nextcloud/Docs/Roam/20210919121222-house.org | /home/ashfaqf/Nextcloud/Docs/Roam/20211011074358-rise.org | /home/ashfaqf/Nextcloud/Docs/Roam/20210918063428-workflow.org | /home/ashfaqf/Nextcloud/Docs/Roam/20210919121317-personal.org | /home/ashfaqf/Nextcloud/Docs/Roam/20210917203413-parenting.org | /home/ashfaqf/Nextcloud/Docs/Roam/20211020115747-islam.org | /home/ashfaqf/Nextcloud/Docs/Roam/Inbox.org |
 
 ** Magit
 #+BEGIN_SRC emacs-lisp
@@ -1054,7 +1097,7 @@ is already narrowed."
 
 #+end_src
 
-** GTD and PARA
+** COMMENT GTD and PARA
 Inspired from https://github.com/mwfogleman/.emacs.d/blob/master/michael.org
 *** Projects
 A project is “any outcome that will take more than one action step to complete.” As a result of implementing Tiago Forte’s “PARA” system, I can ensure that I always have an up to date project list.
@@ -1180,7 +1223,9 @@ This function creates an agenda of stuck projects that is restricted to my “Pr
 #+BEGIN_SRC emacs-lisp
 
 (after! mu4e
-
+  (setq mu4e-maildir-shortcuts
+        '( ("/ri.se/Inbox"               . ?i)
+           ("/ashfaqfarooqui.me/Inbox"   . ?p)))
 
   (setq mu4e-headers-fields
         '((:flags . 6)
@@ -1334,6 +1379,12 @@ This function creates an agenda of stuck projects that is restricted to my “Pr
   )
 #+end_src
 
+
+*** capture
+#+begin_src emacs-lisp
+(setq +org-capture-emails-file "inbox.org")
+
+#+end_src
 
 * Lsp
 ** C++

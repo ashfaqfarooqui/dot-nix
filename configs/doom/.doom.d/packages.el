@@ -77,11 +77,13 @@
 (package! htmlize)
 ;(package! modus-themes
 ;  :recipe (:host gitlab :repo "protesilaos/modus-themes"))
+(package! pretty-hydra)  ;; dependency
+(package! org-media-note :recipe (:host github :repo "yuchen-lea/org-media-note"))
 
 ;;(package! flyspell-lazy)
 ;;(package! elfeed-goodies)
 (package! lexic)
-;(package! holy-books :recipe (:local-repo "lisp/holy-books"))
+(package! holy-books)
 (package! info-colors)
 ;; Testing the org fold branch
 (package! org-fragtog)
@@ -89,11 +91,10 @@
 (package! gif-screencast)
 
 
-
 (package! org-pretty-table-mode
   :recipe (:host github :repo "Fuco1/org-pretty-table"))
 (package! org-ref)
-(package! org-roam-bibtex)
+;(package! org-roam-bibtex)
 (package! iedit)
 ;(package! ob-ammonite)
 ;(package! flycheck-grammarly)
@@ -109,3 +110,4 @@
            :repo "nobiot/org-transclusion"
            :branch "main"
            :files ("*.el")))
+(package! org-web-tools)

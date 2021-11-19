@@ -23,6 +23,7 @@
 *** http://blog.acolyer.org/feed/
 *** https://raghavian.github.io/feed.xml
 *** https://buttondown.email/hillelwayne/rss
+*** https://www.nyteknik.se/nt-rss.xml :NYTEKNIK:
 ** Emacs :EMACS:
 *** https://oremacs.com/atom.xml
 *** http://sachachua.com/blog/feed/

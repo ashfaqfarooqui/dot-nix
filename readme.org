@@ -62,3 +62,7 @@ fetch mail
 #+begin_src sh
 mbsync -a
 #+end_src
+
+** Zotero
+Install better bibtex
+https://retorque.re/zotero-better-bibtex/citing/

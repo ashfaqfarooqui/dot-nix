@@ -2,6 +2,8 @@
 
 {
   home.packages = with pkgs; [
+    obsidian
+
     languagetool
     mu
     isync
@@ -12,6 +14,9 @@
     nerdfonts
     ibm-plex
     overpass
+
+    vdirsyncer
+    khal
 
     (makeDesktopItem {
       name = "org-protocol";
