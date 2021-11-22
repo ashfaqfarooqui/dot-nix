@@ -449,10 +449,12 @@ archive of finished tasks in =archive.org=.
 #+END_SRC
 *** Open main file
 #+begin_src emacs-lisp
+(after! org
 (defun my/open-main-file ()
   (interactive)
 (org-open-file org-basb-main-file)
                         )
+)
 #+end_src
 
 #+RESULTS:
@@ -539,62 +541,61 @@ some more misc settings
 
 #+BEGIN_SRC emacs-lisp
    (after! org   (setq org-capture-templates
-            (quote (
+                       (quote (
 
-                    ("p" "Protocol" entry (file+headline org-inbox-file "Links")
-                     "* %^{Title}\nCaptured On: %U\nSource: %u, %c\n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?")
-                    ("L" "Protocol Link" entry (file+headline org-inbox-file "Links")
-                     "* %? [[%:link][%:description]] \nCaptured On: %U")
- ("l" "link" entry (file+headline  org-inbox-file "Links")
-         "* TODO %(org-cliplink-capture)" :immediate-finish t)
-                    ("i" "Inbox"
-                     entry
-                     (file org-inbox-file)
-                     "* %u %? \n :\n:PROPERTIES:\n:CREATED: %U\n:END:")
+                               ("p" "Protocol" entry (file+headline org-inbox-file "Links")
+                                "* %^{Title}\nCaptured On: %U\nSource: %u, %c\n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?")
+                               ("L" "Protocol Link" entry (file+headline org-inbox-file "Links")
+                                "* %? [[%:link][%:description]] \nCaptured On: %U")
+                               ("l" "link" entry (file+headline  org-inbox-file "Links")
+                                "* TODO %(org-cliplink-capture)" :immediate-finish t)
+                               ("i" "Inbox"
+                                entry
+                                (file org-inbox-file)
+                                "* %u %? \n :\n:PROPERTIES:\n:CREATED: %U\n:END:")
 
-                    ("t" "Task"
-                     entry
-                     (file+headline org-inbox-file "Tasks")
-                     "* TODO %? \n :PROPERTIES:\n:CREATED: %U\n:END:")
+                               ("t" "Task"
+                                entry
+                                (file+headline org-inbox-file "Tasks")
+                                "* TODO %? \n :PROPERTIES:\n:CREATED: %U\n:END:")
+;
+;                               ("h" "health log")
+;                               ("hr" "Running" entry (file+headline  "~/Orgs/BASB/Areas/Health/log.org" "Running")
+;                                (file "~/.doom.d/templates/running.org") :empty-lines 1)
+;
+;                               ("hs" "Sleep" entry (file+headline  "~/Orgs/BASB/Areas/Health/log.org" "Sleep")
+;                                (file "~/.doom.d/templates/sleep.org") :empty-lines 1)
 
-                     ("h" "health log")
-                    ("hr" "Running" entry (file+headline  "~/Orgs/BASB/Areas/Health/log.org" "Running")
-                     (file "~/.doom.d/templates/running.org") :empty-lines 1)
+                               ("e" "Email" entry (file+headline org-inbox-file "Reply to Mail")
+                                "* TODO Process email |- %:from: :: %:subject :EMAIL:\n:PROPERTIES:\n:CREATED: %U\n:EMAIL-SOURCE: %l\n:END:\n\n
+   ,#+begin_quote \n
+   %i
+   ,#+end_quote\n
 
-                    ("hs" "Sleep" entry (file+headline  "~/Orgs/BASB/Areas/Health/log.org" "Sleep")
-                     (file "~/.doom.d/templates/sleep.org") :empty-lines 1)
-
-                    ("e" "Email" entry (file+headline org-inbox-file "Reply to Mail")
-                     "* TODO Process email |- %:from: :: %:subject :EMAIL:\n:PROPERTIES:\n:CREATED: %U\n:EMAIL-SOURCE: %l\n:END:\n\n
-,#+begin_quote \n
-%i
-,#+end_quote\n
-
-%?
+   %?
                 " )
 
 
 
 
-                    ("H" "Habit" entry (file org-inbox-file)
-                     "* TODO %?\n%U\n%a\nSCHEDULED: %(format-time-string \"%<<%Y-%m-%d %a .+1d/3d>>\")\n:PROPERTIES:\n:STYLE: habit\n:REPEAT_TO_STATE: TODO\n:END:\n")
+                               ("H" "Habit" entry (file org-inbox-file)
+                                "* TODO %?\n%U\n%a\nSCHEDULED: %(format-time-string \"%<<%Y-%m-%d %a .+1d/3d>>\")\n:PROPERTIES:\n:STYLE: habit\n:REPEAT_TO_STATE: TODO\n:END:\n")
 
 
-                    ("c" "cooking")
-                    ("cr" "Cookbook" entry (file (concat (org-file-path  "BASB/Reference/Cookbook/cookbook.org")))
-                     "%(org-chef-get-recipe-from-url)"
-                     :empty-lines 1)
+                               ("c" "cooking")
+                               ("cr" "Cookbook" entry (file (concat (org-file-path  "BASB/Resource/Cookbook/cookbook.org")))
+                                "%(org-chef-get-recipe-from-url)"
+                                :empty-lines 1)
 
-                    ("cm" "Manual Cookbook" entry (file (concat (org-file-path "BASB/Reference/Cookbook/cookbook.org")))
-                     "* %^{Recipe title: }\n  :PROPERTIES:\n  :source-url:\n  :servings:\n  :prep-time:\n  :cook-time:\n  :ready-in:\n  :END:\n** Ingredients\n   %?\n** Directions\n\n")
+                               ("cm" "Manual Cookbook" entry (file (concat (org-file-path "BASB/Resource/Cookbook/cookbook.org")))
+                                "* %^{Recipe title: }\n  :PROPERTIES:\n  :source-url:\n  :servings:\n  :prep-time:\n  :cook-time:\n  :ready-in:\n  :END:\n** Ingredients\n   %?\n** Directions\n\n")
 
-              )
+                               )
 
 
-                    ))
+                              ))
 
-)
-
+     )
 #+END_SRC
 
 #+RESULTS:
@@ -616,7 +617,6 @@ some more misc settings
 #+RESULTS:
 : 51DE2D88
 
-** Org agenda
 ** Org download
 #+begin_src emacs-lisp
 (setq org-download-screenshot-method "scrot -s %s")
@@ -985,7 +985,7 @@ Taking inspiration from [[https://github.com/rougier/emacs-gtd][GitHub - rougier
 
 *** agenda
 #+begin_src emacs-lisp
-
+(after! org
     (defun my/org-roam-refresh-agenda-list ()
       (interactive)
 
@@ -996,16 +996,16 @@ Taking inspiration from [[https://github.com/rougier/emacs-gtd][GitHub - rougier
                                      (my/roam-filter-by-tag "REFILE")
                                      ))
 
+      (add-to-list 'org-agenda-files org-basb-main-file)
       (add-to-list 'org-agenda-files org-inbox-file)
       (add-to-list 'org-agenda-files org-inbox-orgzly-file)
       )
 
     ;; Build the agenda list the first time for the session
     (my/org-roam-refresh-agenda-list)
+    )
 #+end_src
 
-#+RESULTS:
-| ~/Nextcloud/Docs/inbox-orgzly.org | ~/Nextcloud/Docs/inbox.org | /home/ashfaqf/Nextcloud/Docs/Roam/20211001205359-mides.org | /home/ashfaqf/Nextcloud/Docs/Roam/20211104224007-passport_and_visa.org | /home/ashfaqf/Nextcloud/Docs/Roam/20211010125752-udacity_c.org | /home/ashfaqf/Nextcloud/Docs/Roam/20211109121421-readwise_org_mode_export_plugin.org | /home/ashfaqf/Nextcloud/Docs/Roam/Area/Islam/Illumine/20210920074451-surah_57_al_hadid.org | /home/ashfaqf/Nextcloud/Docs/Roam/20210917183532-lash_fire.org | /home/ashfaqf/Nextcloud/Docs/Roam/20211104224418-building_a_second_brain_course.org | /home/ashfaqf/Nextcloud/Docs/Roam/20210919120627-health.org | /home/ashfaqf/Nextcloud/Docs/Roam/20210919121222-house.org | /home/ashfaqf/Nextcloud/Docs/Roam/20211011074358-rise.org | /home/ashfaqf/Nextcloud/Docs/Roam/20210918063428-workflow.org | /home/ashfaqf/Nextcloud/Docs/Roam/20210919121317-personal.org | /home/ashfaqf/Nextcloud/Docs/Roam/20210917203413-parenting.org | /home/ashfaqf/Nextcloud/Docs/Roam/20211020115747-islam.org | /home/ashfaqf/Nextcloud/Docs/Roam/Inbox.org |
 
 ** Magit
 #+BEGIN_SRC emacs-lisp
@@ -1097,7 +1097,7 @@ Taking inspiration from [[https://github.com/rougier/emacs-gtd][GitHub - rougier
 
 #+end_src
 
-** COMMENT GTD and PARA
+** GTD and PARA
 Inspired from https://github.com/mwfogleman/.emacs.d/blob/master/michael.org
 *** Projects
 A project is “any outcome that will take more than one action step to complete.” As a result of implementing Tiago Forte’s “PARA” system, I can ensure that I always have an up to date project list.
