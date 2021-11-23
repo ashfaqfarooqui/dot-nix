@@ -401,6 +401,7 @@ Single Capitals as you type."
 #+begin_src emacs-lisp
 
 (use-package! org-appear
+  :after org
   :hook (org-mode . org-appear-mode)
   :config
   (setq org-appear-autoemphasis t
@@ -485,15 +486,53 @@ some more misc settings
 ** Org-keywords
 #+begin_src emacs-lisp
 (after! org
-  (add-to-list 'org-todo-keywords '(sequence "APT"))
-  (add-to-list 'org-todo-keyword-faces '(("APT" . +org-todo-active)))
+
+    (setq org-todo-keywords
+        '((sequence
+           "TODO(t)"  ; A task that needs doing & is ready to do
+           "PROJ(p)"  ; A project, which usually contains other tasks
+           "LOOP(r)"  ; A recurring task
+           "NEXT(n)"  ; A task that is in progress
+           "WAIT(w)"  ; Something external is holding up this task
+           "HOLD(h)"  ; This task is paused/on hold because of me
+           "IDEA(i)"  ; An unconfirmed and unapproved task or notion
+           "|"
+           "DONE(d)"  ; Task successfully completed
+           "KILL(k)") ; Task was cancelled, aborted or is no longer applicable
+          (sequence
+           "[ ](T)"   ; A task that needs doing
+           "[-](S)"   ; Task is in progress
+           "[?](W)"   ; Task is being held up or paused
+           "|"
+           "[X](D)")  ; Task was completed
+          (sequence
+           "|"
+           "OKAY(o)"
+           "YES(y)"
+           "NO(n)")
+          (sequence
+           "MEETING(m)"))
+        org-todo-keyword-faces
+        '(("[-]"  . +org-todo-active)
+          ("NEXT" . +org-todo-active)
+          ("MEETING" . +org-todo-active)
+          ("[?]"  . +org-todo-onhold)
+          ("WAIT" . +org-todo-onhold)
+          ("HOLD" . +org-todo-onhold)
+          ("PROJ" . +org-todo-project)
+          ("NO"   . +org-todo-cancel)
+          ("KILL" . +org-todo-cancel)))
 
   )
 #+end_src
 
 #+RESULTS:
-: (((APT . +org-todo-active)) ((APPT . +org-todo-active)) ([-] . +org-todo-active) (STRT . +org-todo-active) ([?] . +org-todo-onhold) (WAIT . +org-todo-onhold) (HOLD . +org-todo-onhold) (PROJ . +org-todo-project) (NO . +org-todo-cancel) (KILL . +org-todo-cancel))
+: ((APT . +org-todo-active) ((APT . +org-todo-active)) ([-] . +org-todo-active) (STRT . +org-todo-active) ([?] . +org-todo-onhold) (WAIT . +org-todo-onhold) (HOLD . +org-todo-onhold) (PROJ . +org-todo-project) (NO . +org-todo-cancel) (KILL . +org-todo-cancel))
+** Folding
+#+begin_src emacs-lisp
+(setq org-startup-folded 'content)
 
+#+end_src
 ** Org-tags
 #+BEGIN_SRC emacs-lisp
 ; Tags with fast selection keys
@@ -643,12 +682,12 @@ some more misc settings
            :unnarrowed t)
          ("i" "Religion")
           ("in" "note" plain "%?"
-           :if-new (file+head "Area/Islam/%<%Y%m%d%H%M%S>-${slug}.org"
+           :if-new (file+head "Islam/%<%Y%m%d%H%M%S>-${slug}.org"
                               "#title: ${title}\n")
            :unnarrowed t)
 
           ("ik" "Kuthbah" plain "%?"
-           :if-new (file+head) "Area/Islam/Khutba/%<%Y%m%d%H%M%S>-${slug}.org" "#title: ${title}\n#+Date: %(org-read-date nil nil nil)")
+           :if-new (file+head) "Islam/Khutba/%<%Y%m%d%H%M%S>-${slug}.org" "#title: ${title}\n#+Date: %(org-read-date nil nil nil)")
           )
 
         )
@@ -876,6 +915,22 @@ the final documents.
   (require 'ox-extra)
   (ox-extras-activate '(ignore-headlines)))
 #+end_src
+** Importing
+#+begin_src emacs-lisp
+(defun markdown-convert-buffer-to-org ()
+    "Convert the current buffer's content from markdown to orgmode format and save it with the current buffer's file name but with .org extension."
+    (interactive)
+    (shell-command-on-region (point-min) (point-max)
+                             (format "pandoc -f markdown -t org -o %s"
+                                     (concat (file-name-sans-extension (buffer-file-name)) ".org"))))
+
+#+end_src
+
+#+begin_src emacs-lisp
+
+(use-package! org-pandoc-import :after org)
+
+#+end_src
 * Narrow widen
 Taken from https://endlessparentheses.com/emacs-narrow-or-widen-dwim.html
 #+BEGIN_SRC emacs-lisp
@@ -986,6 +1041,34 @@ Taking inspiration from [[https://github.com/rougier/emacs-gtd][GitHub - rougier
 *** agenda
 #+begin_src emacs-lisp
 (after! org
+  (defun my/style-org-agenda()
+ ;; (my/buffer-face-mode-variable)
+  (set-face-attribute 'org-agenda-date nil :height 1.1)
+  (set-face-attribute 'org-agenda-date-today nil :height 1.1 :slant 'italic)
+  (set-face-attribute 'org-agenda-date-weekend nil :height 1.1))
+
+(add-hook 'org-agenda-mode-hook 'my/style-org-agenda)
+
+(setq org-agenda-breadcrumbs-separator " ❱ "
+      org-agenda-current-time-string "⏰ ┈┈┈┈┈┈┈┈┈┈┈ now"
+      org-agenda-time-grid '((weekly today require-timed)
+                             (800 1000 1200 1400 1600 1800 2000)
+                             "---" "┈┈┈┈┈┈┈┈┈┈┈┈┈")
+      org-agenda-prefix-format '((agenda . "%i %-12:c%?-12t%b% s")
+                                 (todo . " %i %-12:c")
+                                 (tags . " %i %-12:c")
+                                 (search . " %i %-12:c")))
+
+(setq org-agenda-format-date (lambda (date) (concat "\n" (make-string (window-width) 9472)
+                                                    "\n"
+                                                    (org-agenda-format-date-aligned date))))
+(setq org-cycle-separator-lines 2)
+(setq org-agenda-category-icon-alist
+      `(("Work" ,(list (all-the-icons-faicon "cogs")) nil nil :ascent center)
+        ("Personal" ,(list (all-the-icons-material "person")) nil nil :ascent center)
+        ("Calendar" ,(list (all-the-icons-faicon "calendar")) nil nil :ascent center)
+        ("Reading" ,(list (all-the-icons-faicon "book")) nil nil :ascent center)))
+
     (defun my/org-roam-refresh-agenda-list ()
       (interactive)
 
