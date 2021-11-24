@@ -444,7 +444,7 @@ archive of finished tasks in =archive.org=.
   (setq org-inbox-orgzly-file
         (concat (org-file-path "inbox-orgzly.org")))
   (setq org-inbox-file (org-file-path "inbox.org"))
-(setq org-basb-main-file (concat (org-file-path "Roam/index.org")))
+(setq org-basb-main-file (concat (org-file-path "Roam/pages/index.org")))
 )
 
 #+END_SRC
@@ -672,22 +672,23 @@ some more misc settings
 
 (after! org-roam
   (setq org-roam-directory "~/Nextcloud/Docs/Roam/")
+    (setq org-roam-dailies-directory "journals/")
   (setq org-roam-capture-templates
         '(("d" "default" plain "%?"
-           :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+           :if-new (file+head "pages/%<%Y%m%d%H%M%S>-${slug}.org"
                               "#+title: ${title}\n#+Date: %t")
            :unnarrowed t)
           ("p" "project" plain (file "templates/newProjectTemplate.org")
-           :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: Project")
+           :if-new (file+head "pages/%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: Project")
            :unnarrowed t)
          ("i" "Religion")
           ("in" "note" plain "%?"
-           :if-new (file+head "Islam/%<%Y%m%d%H%M%S>-${slug}.org"
+           :if-new (file+head "pages/Islam/%<%Y%m%d%H%M%S>-${slug}.org"
                               "#title: ${title}\n")
            :unnarrowed t)
 
           ("ik" "Kuthbah" plain "%?"
-           :if-new (file+head) "Islam/Khutba/%<%Y%m%d%H%M%S>-${slug}.org" "#title: ${title}\n#+Date: %(org-read-date nil nil nil)")
+           :if-new (file+head) "pages/Islam/Khutba/%<%Y%m%d%H%M%S>-${slug}.org" "#title: ${title}\n#+Date: %(org-read-date nil nil nil)")
           )
 
         )
@@ -773,7 +774,7 @@ some more misc settings
        (my/org-roam-filter-by-tag "Area")
        :templates
        '(("a" "area" plain "\n"
-          :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: Area")
+          :if-new (file+head "pages/%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: Area")
           :unnarrowed t))))
 
 
@@ -789,7 +790,7 @@ some more misc settings
        (my/org-roam-filter-by-tag "Project")
        :templates
        '(("p" "project" plain (file "~/.doom.d/templates/newProjecttemplate.org")
-          :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: Project")
+          :if-new (file+head "pages/%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: Project")
           :unnarrowed t))))
 
     (defun my/org-roam-copy-todo-to-today ()
