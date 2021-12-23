@@ -9,7 +9,7 @@
 [commit]
 	gpgsign = true
 [credential "https://git.overleaf.com"]
-       username = ashfaqf@chalmers.se
+       username = ashfaq@ashfaqfarooqui.me
 [credential "https://github.com"]
        username = ashfaq@ashfaqfarooqui.me
 [github]
