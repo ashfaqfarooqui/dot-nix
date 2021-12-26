@@ -1358,7 +1358,7 @@ This function creates an agenda of stuck projects that is restricted to my “Pr
                         (mu4e-sent-folder       . "/ashfaqfarooqui.me/Sent")
                         (mu4e-drafts-folder     . "/ashfaqfarooqui.me/Drafts")
                         (mu4e-trash-folder      . "/ashfaqfarooqui.me/Trash")
-                        (mu4e-refile-folder     . "/ashfaqfarooqui.me/All Mail")
+                        (mu4e-refile-folder     . "/ashfaqfarooqui.me/Archive")
                         (smtpmail-smtp-user     . "ashfaq.farooqui@mailbox.org")
                         ;;    (user-mail-address      . "ashfaq@ashfaqfarooqui.me")    ;; only needed for mu < 1.4
                         (mu4e-attachment-dir . "~/Documents/MailAttachments/Personal")
@@ -1374,7 +1374,7 @@ This function creates an agenda of stuck projects that is restricted to my “Pr
                         (mu4e-sent-folder       . "/ri.se/Sent Mail")
                         (mu4e-drafts-folder     . "/ri.se/Drafts")
                         (mu4e-trash-folder      . "/ri.se/Trash")
-                        (mu4e-refile-folder     . "/ri.se/All Mail")
+                        (mu4e-refile-folder     . "/ri.se/Arkiv")
                         (smtpmail-smtp-user     . "ashfaq.farooqui@ri.se")
                         ;;    (user-mail-address      . "ashfaq@ashfaqfarooqui.me")    ;; only needed for mu < 1.4
                         (mu4e-attachment-dir . "~/Documents/MailAttachments/ri.se")
