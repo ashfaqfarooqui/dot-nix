@@ -26,7 +26,7 @@ in {
     }
   '';
 
-  home.packages = [ pkgs.sqlitebrowser ];
+  home.packages = [ ];
 
   imports = [
 
@@ -37,7 +37,6 @@ in {
     ./modules/languages.nix
     ./modules/nix-utilities.nix
     ./modules/chat.nix
-    ./modules/alacritty.nix
     ./modules/nixos-desktop.nix
     ./modules/xmonad.nix
     ./modules/fonts.nix

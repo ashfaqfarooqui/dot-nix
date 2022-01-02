@@ -9,12 +9,19 @@
     isync
     sqlite
     ispell
+    aspell
     hunspell
     jetbrains-mono
     nerdfonts
     ibm-plex
     overpass
 
+  proselint
+    sqlite
+    graphviz
+    coreutils
+    clang
+    texlive.combined.scheme-full
     vdirsyncer
     khal
 
@@ -31,7 +38,7 @@
 
   programs.emacs = {
     enable = true;
-    package = pkgs.emacsPgtkGcc;
+    package = pkgs.emacsGcc;
     extraPackages = epkgs: [ epkgs.emacsql-sqlite epkgs.pdf-tools epkgs.vterm ];
   };
 

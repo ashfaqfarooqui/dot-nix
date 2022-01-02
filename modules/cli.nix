@@ -25,13 +25,14 @@
     unzip
     xsv
     zsh
-    #zsh-powerlevel10k
+    zsh-powerlevel10k
     stow
     htop
     xclip
     oh-my-zsh
     fzf-zsh
     direnv
+    xdotool
   ];
 
   programs.direnv = {
@@ -45,13 +46,16 @@
     enableCompletion = true;
     enableAutosuggestions = true;
     #  environment.pathsToLink = [ "/share/zsh" ];
-    #enableSyntaxHighlighting = true;
+    enableSyntaxHighlighting = true;
     enableVteIntegration = true;
     history.ignorePatterns = [ "rm *" "pkill *" "ls *" ];
     oh-my-zsh = {
       enable = true;
       plugins = [ "sudo" "dirhistory" ];
     };
+initExtraBeforeCompInit = "source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
+
+ initExtra = "[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh";
     initExtraFirst = ''
       # Emacs tramp mode compatibility
       [[ $TERM == "tramp" ]] && unsetopt zle && PS1='$ ' && return
@@ -63,7 +67,9 @@
       emulate zsh -c "$(direnv hook zsh)"
     '';
     # initExtraBeforeCompInit = builtins.readFile ../configs/zsh/.zshrc;
-    plugins = [{
+    plugins = [
+
+{
       name = "zsh-nix-shell";
       file = "nix-shell.plugin.zsh";
       src = pkgs.fetchFromGitHub {
@@ -72,28 +78,9 @@
         rev = "v0.4.0";
         sha256 = "037wz9fqmx0ngcwl9az55fgkipb745rymznxnssr3rx9irb6apzg";
       };
-    }];
-    #plugins = [{
-    #  # will source zsh-autosuggestions.plugin.zsh
-    #  name = "zsh-syntax-highlighting";
-    #  src = pkgs.fetchFromGitHub {
-    #    owner = "zsh-users";
-    #    repo = "zsh-syntax-highlighting";
-    #    rev = "v0.7.1";
-    #    sha256 = "1ynymxvbqx8isak9zvfnayb217irwrb1m27cpjqni10rxrk4417m";
-    #  };
-    #}
-    #{
-    #  name = "enhancd";
-    #  file = "init.sh";
-    #  src = pkgs.fetchFromGitHub {
-    #    owner = "b4b4r07";
-    #    repo = "enhancd";
-    #    rev = "v2.2.4";
-    #    sha256 = "14lqgzqn5yvdk29fygs6s232j8sikifxxdzh86zas1h8n4lpf2z3";
-    #  };
-    # }
-    #  ];
+    }
+    
+     ];
 
   };
 
@@ -154,28 +141,9 @@
 
   };
 
-  programs.starship = {
-    enable = true;
-    enableBashIntegration = false;
-    enableZshIntegration = true;
-    settings = {
-      add_newline = false;
-      format =
-        lib.concatStrings [ "$directory" "$all" "$line_break" "$character" ];
-      scan_timeout = 20;
-      character = {
-        success_symbol = "➜(bold green)";
-        error_symbol = "[✗](bold red)";
-      };
-      cmake = {
-
-      };
-    };
-  };
-
   home.sessionVariables = {
     EDITOR = "emacsclient -c -a emacs";
-    BROWSER = "brave";
+    BROWSER = "firefox";
     QT_XCB_GL_INTEGRATION = "none";
   };
 
@@ -183,7 +151,7 @@
     enable = true;
     grabKeyboardAndMouse = false;
     enableSshSupport = true;
-    pinentryFlavor = "gnome3";
+    pinentryFlavor = "curses";
 
   };
 
