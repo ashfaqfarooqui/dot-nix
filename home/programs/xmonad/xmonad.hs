@@ -11,9 +11,14 @@ import XMonad
 import Data.Monoid
 import System.Exit
 import System.IO (hPutStrLn)
-
+import           Data.Foldable                         ( traverse_ )
 import qualified XMonad.StackSet as W
 import qualified Data.Map        as M
+
+import qualified Control.Exception                     as E
+import qualified Data.Map                              as M
+import qualified XMonad.StackSet                       as W
+import qualified XMonad.Util.NamedWindows              as W
 
 import XMonad.Layout.Tabbed
 --hooks
@@ -22,7 +27,14 @@ import XMonad.Hooks.DynamicLog (dynamicLogWithPP, wrap, xmobarPP, xmobarColor, s
 import XMonad.Hooks.ManageDocks -- (avoidStruts, docksEventHook, manageDocks, ToggleStruts(..))
 import XMonad.Hooks.WorkspaceHistory
 import XMonad.Hooks.DynamicBars
-import XMonad.Hooks.ManageHelpers (isFullscreen, doFullFloat)
+import           XMonad.Hooks.ManageHelpers            ( (-?>)
+                                                       , composeOne
+                                                       , doCenterFloat
+                                                       , doFullFloat
+                                                       , isDialog
+                                                       , isFullscreen
+                                                       , isInProperty
+                                                       )
     -- Data
 import Data.Char (isSpace)
 import Data.Monoid
@@ -31,7 +43,13 @@ import Data.Tree
 import qualified Data.Tuple.Extra as TE
 import qualified Data.Map as M
 
+import XMonad.Hooks.UrgencyHook ( UrgencyHook(..), withUrgencyHook)
 
+import           XMonad.Hooks.FadeInactive             ( fadeInactiveLogHook )
+import           XMonad.Hooks.InsertPosition           ( Focus(Newer)
+                                                       , Position(Below)
+                                                       , insertPosition
+                                                       )
 --Actions
 import XMonad.Actions.TreeSelect
 import qualified  XMonad.Actions.Search as S
@@ -63,16 +81,32 @@ import XMonad.Prompt.Ssh
 import XMonad.Prompt.XMonad
 import Control.Arrow (first)
 
+
+import           XMonad.Util.NamedScratchpad           ( NamedScratchpad(..)
+                                                       , customFloating
+                                                       , defaultFloating
+                                                       , namedScratchpadAction
+                                                       , namedScratchpadManageHook
+                                                       )
 -- utils
 import XMonad.Util.Run (runProcessWithInput, safeSpawn, spawnPipe)
 import XMonad.Util.SpawnOnce
+import           XMonad.Actions.SpawnOn                ( manageSpawn
+                                                       , spawnOn
+                                                       )
 import XMonad.Util.EZConfig (additionalKeysP)
 
+-- Imports for Polybar --
+import qualified Codec.Binary.UTF8.String              as UTF8
+import qualified DBus                                  as D
+import qualified DBus.Client                           as D
+import           XMonad.Hooks.DynamicLog
 
 -- The preferred terminal program, which is used in a binding below and by
 -- certain contrib modules.
 --
 myTerminal      = "termite"
+appLauncher  = "rofi -modi drun,ssh,window -show drun -show-icons"
 
 -- Whether focus follows the mouse pointer.
 myFocusFollowsMouse :: Bool
@@ -121,112 +155,26 @@ myEditor = "emacsclient -c -a emacs "  -- Sets emacs as editor for tree select
 --
 -- > workspaces = ["web", "irc", "code" ] ++ map show [4..9]
 --
--- myWorkspaces    = ["1","2","3","4","5","6","7","8","9"]
+myWorkspaces    = ["1","2","3","4","5","6","7","8","9"]
 
-xmobarEscape :: String -> String
-xmobarEscape = concatMap doubleLts
-  where
-        doubleLts '<' = "<<"
-        doubleLts x   = [x]
-
-myWorkspaces :: [String]
-myWorkspaces = clickable . (map xmobarEscape)
-               $ ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
-               
-  where
-        clickable l = [ "<action=xdotool key super+" ++ show (n) ++ "> " ++ ws ++ " </action>" |
-                      (i,ws) <- zip [1..9] l,
-                      let n = i ]
-
-
-windowCount :: X (Maybe String)
-windowCount = gets $ Just . show . length . W.integrate' . W.stack . W.workspace . W.current . windowset
-
-
----------------------------
--- XPROMPT SETTINGS
-------------------------------------------------------------------------
-dtXPConfig :: XPConfig
-dtXPConfig = def
-      { font                = "xft:Mononoki Nerd Font:size=9"
-      , bgColor             = "#292d3e"
-      , fgColor             = "#d0d0d0"
-      , bgHLight            = "#c792ea"
-      , fgHLight            = "#000000"
-      , borderColor         = "#535974"
-      , promptBorderWidth   = 0
-      , promptKeymap        = dtXPKeymap
-      , position            = Top
---    , position            = CenteredAt { xpCenterY = 0.3, xpWidth = 0.3 }
-      , height              = 20
-      , historySize         = 256
-      , historyFilter       = id
-      , defaultText         = []
-      , autoComplete        = Just 100000  -- set Just 100000 for .1 sec
-      , showCompletionOnTab = False
-      , searchPredicate     = S.isPrefixOf
-      , alwaysHighlight     = True
-      , maxComplRows        = Nothing      -- set to Just 5 for 5 rows
-      }
-
--- The same config minus the autocomplete feature which is annoying on
--- certain Xprompts, like the search engine prompts.
-dtXPConfig' :: XPConfig
-dtXPConfig' = dtXPConfig
-      { autoComplete = Nothing
-      }
-
--- A list of all of the standard Xmonad prompts
-promptList :: [(String, XPConfig -> X ())]
-promptList = [ ("m", manPrompt)          -- manpages prompt
-             , ("p", passPrompt)         -- get passwords (requires 'pass')
-             , ("g", passGeneratePrompt) -- generate passwords (requires 'pass')
-             , ("r", passRemovePrompt)   -- remove passwords (requires 'pass')
-             , ("s", sshPrompt)          -- ssh prompt
-             , ("x", xmonadPrompt)       -- xmonad prompt
-             ]
-
-------------------------------------------------------------------------
--- XPROMPT KEYMAP (emacs-like key bindings)
-------------------------------------------------------------------------
-dtXPKeymap :: M.Map (KeyMask,KeySym) (XP ())
-dtXPKeymap = M.fromList $
-     map (first $ (,) controlMask)   -- control + <key>
-     [ (xK_z, killBefore)            -- kill line backwards
-     , (xK_k, killAfter)             -- kill line fowards
-     , (xK_a, startOfLine)           -- move to the beginning of the line
-     , (xK_e, endOfLine)             -- move to the end of the line
-     , (xK_m, deleteString Next)     -- delete a character foward
-     , (xK_b, moveCursor Prev)       -- move cursor forward
-     , (xK_f, moveCursor Next)       -- move cursor backward
-     , (xK_BackSpace, killWord Prev) -- kill the previous word
-     , (xK_y, pasteString)           -- paste a string
-     , (xK_g, quit)                  -- quit out of prompt
-     , (xK_bracketleft, quit)
-     ]
-     ++
-     map (first $ (,) altMask)       -- meta key + <key>
-     [ (xK_BackSpace, killWord Prev) -- kill the prev word
-     , (xK_f, moveWord Next)         -- move a word forward
-     , (xK_b, moveWord Prev)         -- move a word backward
-     , (xK_d, killWord Next)         -- kill the next word
-     , (xK_n, moveHistory W.focusUp')   -- move up thru history
-     , (xK_p, moveHistory W.focusDown') -- move down thru history
-     ]
-     ++
-     map (first $ (,) 0) -- <key>
-     [ (xK_Return, setSuccess True >> setDone True)
-     , (xK_KP_Enter, setSuccess True >> setDone True)
-     , (xK_BackSpace, deleteString Prev)
-     , (xK_Delete, deleteString Next)
-     , (xK_Left, moveCursor Prev)
-     , (xK_Right, moveCursor Next)
-     , (xK_Home, startOfLine)
-     , (xK_End, endOfLine)
-     , (xK_Down, moveHistory W.focusUp')
-     , (xK_Up, moveHistory W.focusDown')
-     , (xK_Escape, quit)
-     ]
+-- xmobarEscape :: String -> String
+-- xmobarEscape = concatMap doubleLts
+--   where
+--         doubleLts '<' = "<<"
+--         doubleLts x   = [x]
+--
+-- myWorkspaces :: [String]
+-- myWorkspaces = clickable . (map xmobarEscape)
+--                $ ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+--
+--   where
+--         clickable l = [ "<action=xdotool key super+" ++ show (n) ++ "> " ++ ws ++ " </action>" |
+--                       (i,ws) <- zip [1..9] l,
+--                       let n = i ]
+--
+--
+-- windowCount :: X (Maybe String)
+-- windowCount = gets $ Just . show . length . W.integrate' . W.stack . W.workspace . W.current . windowset
 
 
 ------------------------------------------------------------------------
@@ -300,6 +248,7 @@ myKeys =
         
 
     --- My Applications (Super+Alt+Key)
+        , ("M-p", spawn appLauncher)
         , ("M-c", spawn "copyq toggle")
         , ("M-S-t", spawn "nautilus")
         , ("M-g", spawn "emacsclient --alternate-editor='' --no-wait --create-frame")
@@ -319,7 +268,7 @@ myKeys =
         , ("XF86MonBrightnessDown", spawn "light -U 10")
     
     
-        , ("<Print>", spawn "scrotd 0")
+        , ("<Print>", spawn "flameshot full")
         ]
         ++[ (otherModMasks ++ "M-" ++ [key], action tag)
       | (tag, key)  <- zip myWorkspaces "123456789"
@@ -330,7 +279,7 @@ myKeys =
         -- Appending search engines to keybindings list
       --  ++ [("M-s " ++ k, S.promptSearch dtXPConfig' f) | (k,f) <- searchList ]
       --  ++ [("M-S-s " ++ k, S.selectSearch f) | (k,f) <- searchList ]
-        ++ [("M-p" ++ k, f dtXPConfig) | (k,f) <- promptList ]
+      --  ++ [("M-p" ++ k, f dtXPConfig) | (k,f) <- promptList ]
           where nonNSP          = CWS.WSIs (return (\ws -> W.tag ws /= "nsp"))
                 nonEmptyNonNSP  = CWS.WSIs (return (\ws -> isJust (W.stack ws) && W.tag ws /= "nsp"))
 
@@ -421,25 +370,114 @@ myLayout = avoidStruts $ ( tiled
 -- To match on the WM_NAME, you can use 'title' in the same way that
 -- 'className' and 'resource' are used below.
 --
-myManageHook = composeAll
-    [ className =? "MPlayer"        --> doFloat
-    , className =? "Gimp"           --> doFloat
-    , className =? "mpv"            --> doFloat
-    , resource  =? "desktop_window" --> doIgnore
-    , resource  =? "kdesktop"       --> doIgnore
-    , className =? "copyq"          --> doFloat
-    , (className =? "firefox" <&&> resource =? "Dialog") --> doFloat  -- Float Firefox Dialog
-    , (className =? "zoom" <&&> title =? "Chat") --> doFloat
-    , (className =? "zoom" <&&> title =? "") --> doFloat
-    , className =? "zoom"     --> doShift (myWorkspaces !! 8)
-    , className =? "firefox"     --> doShift (myWorkspaces !! 2)
-    , className =? "Nautilus"     --> doShift (myWorkspaces !! 5 )
-    , className =? "discord"     --> doShift (myWorkspaces !! 8 )
-    , title =? "alsamixer"     --> doFloat
-    , title =? "Manjaro Settings Manager"     --> doFloat
-    
+-- yManageHook = composeAll
+--    [ className =? "MPlayer"        --> doFloat
+--    , className =? "Gimp"           --> doFloat
+--    , className =? "mpv"            --> doFloat
+--    , resource  =? "desktop_window" --> doIgnore
+--    , resource  =? "kdesktop"       --> doIgnore
+--    , className =? "copyq"          --> doFloat
+--    , (className =? "firefox" <&&> resource =? "Dialog") --> doFloat  -- Float Firefox Dialog
+--    , (className =? "zoom" <&&> title =? "Chat") --> doFloat
+--    , (className =? "zoom" <&&> title =? "") --> doFloat
+--    , className =? "zoom"     --> doShift (myWorkspaces !! 8)
+--    , className =? "firefox"     --> doShift (myWorkspaces !! 2)
+--    , className =? "Nautilus"     --> doShift (myWorkspaces !! 5 )
+--    , className =? "discord"     --> doShift (myWorkspaces !! 8 )
+--    , title =? "alsamixer"     --> doFloat
+--    , title =? "Manjaro Settings Manager"     --> doFloat
+--
+--    ]
+------------------------------------------------------------------------
+-- Window rules:
+
+-- Execute arbitrary actions and WindowSet manipulations when managing
+-- a new window. You can use this to, for example, always float a
+-- particular program, or have a client always appear on a particular
+-- workspace.
+--
+-- To find the property name associated with a program, use
+-- > xprop | grep WM_CLASS
+-- and click on the client you're interested in.
+--
+-- To match on the WM_NAME, you can use 'title' in the same way that
+-- 'className' and 'resource' are used below.
+--
+
+type AppName      = String
+type AppTitle     = String
+type AppClassName = String
+type AppCommand   = String
+
+data App
+  = ClassApp AppClassName AppCommand
+  | TitleApp AppTitle AppCommand
+  | NameApp AppName AppCommand
+  deriving Show
+
+calendar  = ClassApp "Gnome-calendar"       "gnome-calendar"
+eog       = NameApp  "eog"                  "eog"
+evince    = ClassApp "Evince"               "evince"
+gimp      = ClassApp "Gimp"                 "gimp"
+nautilus  = ClassApp "Org.gnome.Nautilus"   "nautilus"
+office    = ClassApp "libreoffice-draw"     "libreoffice-draw"
+pavuctrl  = ClassApp "Pavucontrol"          "pavucontrol"
+spotify   = ClassApp "Spotify"              "myspotify"
+vlc       = ClassApp "Vlc"                  "vlc"
+mpv       = ClassApp "Mpv"                  "mpv"
+yad       = ClassApp "Yad"                  "yad --text-info --text 'XMonad'"
+
+myManageHook = manageApps <+> manageSpawn <+> manageScratchpads
+ where
+  isBrowserDialog     = isDialog <&&> className =? "Brave-browser"
+  isFileChooserDialog = isRole =? "GtkFileChooserDialog"
+  isPopup             = isRole =? "pop-up"
+  isSplash            = isInProperty "_NET_WM_WINDOW_TYPE" "_NET_WM_WINDOW_TYPE_SPLASH"
+  isRole              = stringProperty "WM_WINDOW_ROLE"
+  tileBelow           = insertPosition Below Newer
+  doCalendarFloat   = customFloating (W.RationalRect (11 / 15) (1 / 48) (1 / 4) (1 / 4))
+  manageScratchpads = namedScratchpadManageHook scratchpads
+  anyOf :: [Query Bool] -> Query Bool
+  anyOf = foldl (<||>) (pure False)
+  match :: [App] -> Query Bool
+  match = anyOf . fmap isInstance
+  manageApps = composeOne
+    [ isInstance calendar                      -?> doCalendarFloat
+    , match [ gimp, office ]                   -?> doFloat
+    , match [ eog
+            , nautilus
+            , pavuctrl
+            ]                                  -?> doCenterFloat
+    , match [ evince, spotify, vlc, yad ] -?> doFullFloat
+    , resource =? "desktop_window"             -?> doIgnore
+    , resource =? "kdesktop"                   -?> doIgnore
+    , anyOf [ isBrowserDialog
+            , isFileChooserDialog
+            , isDialog
+            , isPopup
+            , isSplash
+            ]                                  -?> doCenterFloat
+    , isFullscreen                             -?> doFullFloat
+    , pure True                                -?> tileBelow
     ]
 
+isInstance (ClassApp c _) = className =? c
+isInstance (TitleApp t _) = title =? t
+isInstance (NameApp n _)  = appName =? n
+
+getNameCommand (ClassApp n c) = (n, c)
+getNameCommand (TitleApp n c) = (n, c)
+getNameCommand (NameApp  n c) = (n, c)
+
+getAppName    = fst . getNameCommand
+getAppCommand = snd . getNameCommand
+
+scratchpadApp :: App -> NamedScratchpad
+scratchpadApp app = NS (getAppName app) (getAppCommand app) (isInstance app) defaultFloating
+
+runScratchpadApp = namedScratchpadAction scratchpads . getAppName
+
+scratchpads = scratchpadApp <$> [ nautilus, spotify ]
 ------------------------------------------------------------------------
 -- Event handling
 
@@ -545,11 +583,16 @@ myTreeNavigation = M.fromList
 
 -- Run xmonad with the settings you specify. No need to modify this.
 --
-main = do
-  xmproc0 <- spawnPipe "xmobar -x 0 /home/ashfaqf/.xmobar/xmobarrc"
-  xmproc1 <- spawnPipe "xmobar -x 1 /home/ashfaqf/.xmobar/xmobarrc"
-  xmproc2 <- spawnPipe "xmobar -x 2 /home/ashfaqf/.xmobar/xmobarrc"
-  xmonad $ docks def {
+
+
+main :: IO ()
+main = mkDbusClient >>= main'
+
+main' :: D.Client -> IO ()
+main' dbus = do
+  -- xmproc0 <- spawnPipe "xmobar -x 0 /home/ashfaqf/.xmobar/xmobarrc"
+  -- xmproc1 <- spawnPipe "xmobar -x 1 /home/ashfaqf/.xmobar/xmobarrc"
+  xmonad . urgencyHook $ docks def {
       -- simple stuff
         terminal           = myTerminal,
         focusFollowsMouse  = myFocusFollowsMouse,
@@ -568,27 +611,88 @@ main = do
         layoutHook         = myLayout,
         manageHook         = (isFullscreen --> doFullFloat) <+> myManageHook <+> manageDocks,
         handleEventHook    = myEventHook,
-
-        logHook = dynamicLogWithPP xmobarPP
-                        { ppOutput = \x -> hPutStrLn xmproc0 x >> hPutStrLn xmproc1 x  >> hPutStrLn xmproc2 x 
-                        , ppCurrent = xmobarColor "#c3e88d" "" . wrap "[" "]" -- Current workspace in xmobar
-                        , ppVisible = xmobarColor "#c3e88d" ""                -- Visible but not current workspace
-                        , ppHidden = xmobarColor "#82AAFF" "" . wrap "*" ""   -- Hidden workspaces in xmobar
-                        --, ppHiddenNoWindows = xmobarColor "#F07178" ""        -- Hidden workspaces (no windows)
-                        , ppHiddenNoWindows= \( _ ) -> ""       -- Only shows visible workspaces. Useful for TreeSelect.
-                        , ppTitle = xmobarColor "#d0d0d0" "" . shorten 60     -- Title of active window in xmobar
-                        , ppSep =  "<fc=#666666> | </fc>"                     -- Separators in xmobar
-                        , ppUrgent = xmobarColor "#C45500" "" . wrap "!" "!"  -- Urgent workspace
-                        , ppExtras  = [windowCount]                           -- # of windows current workspace
-                        , ppOrder  = \(ws:l:t:ex) -> [ws,l]++ex++[t]
-                        },
+        logHook            = myPolybarLogHook dbus
+        -- logHook = dynamicLogWithPP xmobarPP
+        --                { ppOutput = \x -> hPutStrLn xmproc0 x >> hPutStrLn xmproc1 x  >> hPutStrLn xmproc2 x
+        --                , ppCurrent = xmobarColor "#c3e88d" "" . wrap "[" "]" -- Current workspace in xmobar
+        --                , ppVisible = xmobarColor "#c3e88d" ""                -- Visible but not current workspace
+        --                , ppHidden = xmobarColor "#82AAFF" "" . wrap "*" ""   -- Hidden workspaces in xmobar
+        --                --, ppHiddenNoWindows = xmobarColor "#F07178" ""        -- Hidden workspaces (no windows)
+        --                , ppHiddenNoWindows= \( _ ) -> ""       -- Only shows visible workspaces. Useful for TreeSelect.
+        --                , ppTitle = xmobarColor "#d0d0d0" "" . shorten 60     -- Title of active window in xmobar
+        --                , ppSep =  "<fc=#666666> | </fc>"                     -- Separators in xmobar
+        --                , ppUrgent = xmobarColor "#C45500" "" . wrap "!" "!"  -- Urgent workspace
+        --                , ppExtras  = [windowCount]                           -- # of windows current workspace
+        --                , ppOrder  = \(ws:l:t:ex) -> [ws,l]++ex++[t]
+        --                },
         
-        startupHook        = myStartupHook
+      ,  startupHook        = myStartupHook
     } `additionalKeysP` myKeys
+    where
+      urgencyHook = withUrgencyHook LibNotifyUrgencyHook
 
 
 
-  
+
+------------------------------------------------------------------------
+-- Polybar settings (needs DBus client).
+--
+mkDbusClient :: IO D.Client
+mkDbusClient = do
+  dbus <- D.connectSession
+  D.requestName dbus (D.busName_ "org.xmonad.log") opts
+  return dbus
+ where
+  opts = [D.nameAllowReplacement, D.nameReplaceExisting, D.nameDoNotQueue]
+
+-- Emit a DBus signal on log updates
+dbusOutput :: D.Client -> String -> IO ()
+dbusOutput dbus str =
+  let opath  = D.objectPath_ "/org/xmonad/Log"
+      iname  = D.interfaceName_ "org.xmonad.Log"
+      mname  = D.memberName_ "Update"
+      signal = D.signal opath iname mname
+      body   = [D.toVariant $ UTF8.decodeString str]
+  in  D.emit dbus $ signal { D.signalBody = body }
+
+polybarHook :: D.Client -> PP
+polybarHook dbus =
+  let wrapper c s | s /= "NSP" = wrap ("%{F" <> c <> "} ") " %{F-}" s
+                  | otherwise  = mempty
+      blue   = "#2E9AFE"
+      gray   = "#7F7F7F"
+      orange = "#ea4300"
+      purple = "#9058c7"
+      red    = "#722222"
+  in  def { ppOutput          = dbusOutput dbus
+          , ppCurrent         = wrapper blue
+          , ppVisible         = wrapper gray
+          , ppUrgent          = wrapper orange
+          , ppHidden          = wrapper gray
+          , ppHiddenNoWindows = wrapper red
+          , ppTitle           = wrapper purple . shorten 90
+          }
+
+myPolybarLogHook dbus = myLogHook <+> dynamicLogWithPP (polybarHook dbus)
+--- urgency
+
+-- original idea: https://pbrisbin.com/posts/using_notify_osd_for_xmonad_notifications/
+data LibNotifyUrgencyHook = LibNotifyUrgencyHook deriving (Read, Show)
+
+instance UrgencyHook LibNotifyUrgencyHook where
+  urgencyHook LibNotifyUrgencyHook w = do
+    name     <- W.getName w
+    maybeIdx <- W.findTag w <$> gets windowset
+    traverse_ (\i -> safeSpawn "notify-send" [show name, "workspace " ++ i]) maybeIdx
+
+
+------------------------------------------------------------------------
+-- Status bars and logging
+
+-- Perform an arbitrary action on each internal state change or X event.
+-- See the 'XMonad.Hooks.DynamicLog' extension for examples.
+--
+myLogHook = fadeInactiveLogHook 0.9
 
 
 -- | Finally, a copy of the default bindings in simple textual tabular format.

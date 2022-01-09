@@ -1,1 +1,1 @@
-[ ./gpgagent ./lorri ./udiskie ./picom ./screenlock ]
+[ ./gpgagent ./lorri ./udiskie ./picom ./polybar ]

@@ -161,7 +161,10 @@ let
     nixfmt
 
   ];
-
+  polybarPkgs = with pkgs; [
+    font-awesome-ttf # awesome fonts
+    material-design-icons # fonts with glyphs
+  ];
 in {
   nixpkgs.overlays =
     [ emacsOverlay (import ./overlays/logseq) (import ./overlays/discord) ];
@@ -189,8 +192,8 @@ in {
     }
   '';
 
-  home.packages = defaultPkgs ++ nixPkgs ++ gitPkgs ++ xmonadPkgs ++ emacsPkgs
-    ++ mailPkgs ++ gnomePkgs;
+  home.packages = defaultPkgs ++ polybarPkgs ++ nixPkgs ++ gitPkgs ++ xmonadPkgs
+    ++ emacsPkgs ++ mailPkgs ++ gnomePkgs;
   home.sessionVariables = {
     EDITOR = "emacsclient -c -a emacs";
     BROWSER = "firefox";

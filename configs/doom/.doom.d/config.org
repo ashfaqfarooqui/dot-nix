@@ -436,6 +436,7 @@ archive of finished tasks in =archive.org=.
 
 (after! org
 (setq org-directory "~/Nextcloud/Docs")
+(setq org-id-locations-file (expand-file-name ".orgids" org-directory))
 
   (defun org-file-path (filename)
     "Return the absolute address of an org file, given its relative name."
@@ -448,6 +449,10 @@ archive of finished tasks in =archive.org=.
 )
 
 #+END_SRC
+
+#+RESULTS:
+: ~/Nextcloud/Docs/Roam/pages/index.org
+
 *** Open main file
 #+begin_src emacs-lisp
 (after! org

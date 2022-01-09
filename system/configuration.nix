@@ -170,8 +170,12 @@
     password = "123456";
     shell = pkgs.zsh;
     #defaultUserShell = pkgs.zsh;
-    extraGroups =
-      [ "docker" "wheel" "networkmanager" ]; # Enable ‘sudo’ for the user.
+    extraGroups = [
+      "docker"
+      "wheel"
+      "networkmanager"
+      "video"
+    ]; # Enable ‘sudo’ for the user.
   };
 
   # List packages installed in system profile. To search, run:
@@ -190,6 +194,7 @@
   # started in user sessions.
   # programs.mtr.enable = true;
   programs.zsh.enable = true;
+  programs.light.enable = true;
   # Nix daemon config
   nix = {
     # Automate `nix-store --optimise`
