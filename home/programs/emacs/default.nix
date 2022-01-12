@@ -5,7 +5,7 @@
 
   programs.emacs = {
     enable = true;
-    package = pkgs.emacsGcc;
+    #   package = pkgs.emacsGcc;
     extraPackages = epkgs: [ epkgs.emacsql-sqlite epkgs.pdf-tools epkgs.vterm ];
   };
 

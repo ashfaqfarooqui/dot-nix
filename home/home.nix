@@ -84,6 +84,8 @@ let
     gimp
     mpv
     shotwell
+
+    remmina
   ];
 
   emacsPkgs = with pkgs; [
@@ -162,12 +164,13 @@ let
 
   ];
   polybarPkgs = with pkgs; [
+    siji
     font-awesome-ttf # awesome fonts
     material-design-icons # fonts with glyphs
   ];
+
 in {
-  nixpkgs.overlays =
-    [ emacsOverlay (import ./overlays/logseq) (import ./overlays/discord) ];
+  nixpkgs.overlays = [ (import ./overlays/logseq) (import ./overlays/discord) ];
 
   nixpkgs.config.packageOverrides = pkgs: {
     nur = import (builtins.fetchTarball
