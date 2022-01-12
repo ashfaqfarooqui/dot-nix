@@ -185,6 +185,9 @@
     wget
     firefox
     git
+    # vpn
+    wireguard
+    wireguard-tools
 
   ];
 
