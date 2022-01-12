@@ -14,7 +14,12 @@ let
     exec = ${pkgs.xmonad-log}/bin/xmonad-log
     tail = true
   '';
-
+  openCalendar = "${pkgs.gnome3.gnome-calendar}/bin/gnome-calendar";
+  cal = ''
+    [module/clickable-date]
+    inherit = module/date
+    label = %{A1:${openCalendar}:}%time%%{A}
+  '';
   bar = pkgs.callPackage ./bar.nix { };
   bars = builtins.readFile ./bars.ini;
   colors = builtins.readFile ./colors.ini;
@@ -30,7 +35,10 @@ in {
     enable = true;
     config = ./config.ini;
     package = mypolybar;
-    extraConfig = bars + colors + mods1 + mods2 + customMods;
-    script = "polybar top &";
+    extraConfig = bars + colors + mods1 + mods2 + customMods + cal;
+    script = ''
+      polybar top &
+      polybar bottom &
+    '';
   };
 }

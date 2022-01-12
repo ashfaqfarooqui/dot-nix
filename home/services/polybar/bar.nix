@@ -33,16 +33,16 @@ let
     ; Text Fonts
     font-0 = Iosevka Nerd Font:style=Medium:size=${toString font0};3
     ; Icons Fonts
-    font-1 = icomoon\-feather:style=Medium:size=${toString font1};3
+    font-1 = icomoon-feather:style=Medium:size=${toString font1};3
     ; Powerline Glyphs
     font-2 = Iosevka Nerd Font:style=Medium:size=${toString font2};3
     ; Larger font size for bar fill icons
-    font-3 = Iosevka Nerd Font:style=Medium:size=${toString font3};3
+    font-5 = Iosevka Nerd Font:style=Medium:size=${toString font3};3
     ; Smaller font size for shorter spaces
-    font-4 = Iosevka Nerd Font:style=Medium:size=${toString font4};3
+    ;font-4 = Iosevka Nerd Font:style=Medium:size=${toString font4};3
 
-    ;font-5 = "Font Awesome 5 Free:style=Solid:pixelsize=18;0"
-    ;font-5 = "MaterialIcons:size=18;0"
+    ;font-3 = Font Awesome 5 Free:style=Solid:pixelsize=18;0
+    font-3 = Material Design Icons:style=regular:size=18;0
   '';
 
   top = ''
@@ -51,7 +51,7 @@ let
 
     tray-position = center
     modules-left = right-end-top nixos xmonad left-end-bottom right-end-top left-end-top
-    modules-right = left-end-top keyboard temperature battery
+    modules-right = left-end-top keyboard clickable-date temperature battery
     enable-ipc = true
   '';
 
@@ -61,8 +61,8 @@ let
     bottom = true
 
     tray-position = none
-    modules-left = right-end-bottom mpris left-end-top cpu memory filesystem
-    modules-right = left-end-bottom wired-network wireless-network pulseaudio left-end-bottom powermenu
+    modules-left = right-end-bottom left-end-top cpu memory filesystem
+    modules-right = left-end-bottom network left-end-bottom powermenu
     enable-ipc = true
   '';
 in bar + top + bottom

@@ -11,6 +11,6 @@
     opacityRule = [ "100:name *= 'i3lock'" ];
     shadow = true;
     shadowOpacity = "0.75";
-    blurExclude = [ "class_i = 'polybar'" ];
+    blurExclude = [ "class_i = 'polybar'" "class_i = 'rofi'" ];
   };
 }
