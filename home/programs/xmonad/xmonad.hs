@@ -105,7 +105,7 @@ import           XMonad.Hooks.DynamicLog
 -- The preferred terminal program, which is used in a binding below and by
 -- certain contrib modules.
 --
-myTerminal      = "termite"
+myTerminal      = "alacritty"
 appLauncher  = "rofi -modi drun,ssh,window -show drun -show-icons"
 
 -- Whether focus follows the mouse pointer.
