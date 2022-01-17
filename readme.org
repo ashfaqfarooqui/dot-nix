@@ -66,3 +66,18 @@ mbsync -a
 ** Zotero
 Install better bibtex
 https://retorque.re/zotero-better-bibtex/citing/
+
+** Wireguard
+add configuration file to =/etc/wireguard/wg0.conf= and then use
+#+begin_src sh
+wg-quick up wg0
+
+#+end_src
+Check status using
+#+begin_src sh
+sudo wg
+#+end_src
+Disconnect using
+#+begin_src sh
+wg-quick down wg0
+#+end_src
