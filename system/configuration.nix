@@ -6,15 +6,12 @@
 
 {
   imports = [ # Include the results of the hardware scan.
-    ./hardware-configuration.nix
-    ./wm/xmonad.nix
+./machine/dell/default.nix
+#    ./wm/xmonad.nix
     ./wm/gnome.nix
   ];
 
-  # Use the systemd-boot EFI boot loader.
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-
+  
   networking.hostName = "42"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
