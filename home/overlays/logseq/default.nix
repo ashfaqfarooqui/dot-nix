@@ -1,11 +1,11 @@
 self: super: {
   logseq = super.logseq.overrideAttrs (old: rec {
     pname = "logseq";
-    version = "0.5.7";
+    version = "0.5.8";
     src = builtins.fetchurl {
       url =
         "https://github.com/logseq/logseq/releases/download/${version}/logseq-linux-x64-${version}.AppImage";
-      sha256 = "13qfv8bax65d5a2v6m02p5pcklqx0zq3v29pmkx6yyaky455ifja";
+      sha256 = "1vblav210gf55vim3ani4aqdiss6i9lbrl4690914mlb58l731ss";
       name = "${pname}-${version}.AppImage";
     };
 

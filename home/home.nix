@@ -107,7 +107,7 @@ let
     graphviz
     coreutils
     clang
-    texlive.combined.scheme-full
+    #texlive.combined.scheme-full
     vdirsyncer
     khal
 
@@ -170,7 +170,8 @@ let
   ];
 
 in {
-  nixpkgs.overlays = [ (import ./overlays/logseq) (import ./overlays/discord) ];
+  nixpkgs.overlays =
+    [ emacsOverlay (import ./overlays/logseq) (import ./overlays/discord) ];
 
   nixpkgs.config.packageOverrides = pkgs: {
     nur = import (builtins.fetchTarball
