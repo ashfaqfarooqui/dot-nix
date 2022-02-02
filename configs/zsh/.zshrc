@@ -60,22 +60,19 @@ HYPHEN_INSENSITIVE="true"
 plugins=(jsontools
 git
 extract
-archlinux
 command-not-found
+poetry
 zsh-autosuggestions
 zsh-syntax-highlighting
 python
 cp
 wd
 colorize
-sbt
-scala
 sudo
 )
 
 # User configuration
 
-export PATH="/home/ashfaqf/.npm-packages/bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/lib/jvm/default/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl:/opt/activemq/bin"
 # export MANPATH="/usr/local/man:$MANPATH"
 
 source $ZSH/oh-my-zsh.sh
@@ -113,9 +110,8 @@ alias et="emacsclient -t"
 ef() { fzf | xargs -r -I % $EDITOR % ;}
 ec() { du -a ~/mydotfiles/* | awk '{print $2}' | fzf | xargs -r $EDITOR ;}
 
-NPM_PACKAGES="${HOME}/.npm-packages"
 
-PATH="$HOME/.emacs.d/bin:$NPM_PACKAGES/bin:$PATH"
+PATH="$HOME/.emacs.d/bin:$PATH"
 
 
 ##Cups config, replaces .cups/client.conf...
@@ -126,10 +122,7 @@ PATH="$HOME/.emacs.d/bin:$NPM_PACKAGES/bin:$PATH"
 unset MANPATH # delete if you already modified MANPATH elsewhere in your config
 export MANPATH="$NPM_PACKAGES/share/man:$(manpath)"
 
-export PATH="$PATH:$HOME/.rvm/bin" # Add RVM to PATH for scripting
 
-# added by travis gem
-[ -f /home/ashfaqf/.travis/travis.sh ] && source /home/ashfaqf/.travis/travis.sh
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
@@ -149,3 +142,5 @@ export PATH="$PATH:/home/ashfaqf/.local/share/coursier/bin"
 
 # star ship font
 #eval "$(starship init zsh)"
+
+export PATH="$HOME/.poetry/bin:$PATH"

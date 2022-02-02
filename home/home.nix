@@ -7,25 +7,9 @@ let
 
   defaultPkgs = with pkgs; [
     filezilla
-    rawtherapee
-    #jetbrains.idea-community
-    firefox
-    graphviz
-    nextcloud-client
-    okular
-    evince
-    openssh
     zotero
-    libreoffice
-    evince
-    okular
-    #insync-v3
-    copyq
-    pavucontrol
-    arandr
-    calibre
 
-    libreoffice
+    copyq
 
     #cli
     termite
@@ -52,7 +36,6 @@ let
     tree
     unzip
     xsv
-    zsh
     zsh-powerlevel10k
     stow
     htop
@@ -62,12 +45,8 @@ let
     direnv
     xdotool
 
-    #chat
-    discord
-    slack
-    signal-desktop
-    zoom-us
-    teams
+ 
+
 
     #fonts
     iosevka
@@ -79,11 +58,8 @@ let
     obsidian
 
     # media
-    vlc
-    inkscape
-    gimp
     mpv
-    shotwell
+
 
     remmina
   ];
@@ -98,7 +74,7 @@ let
     aspell
     hunspell
     jetbrains-mono
-    nerdfonts
+    #nerdfonts
     ibm-plex
     overpass
 
@@ -196,8 +172,8 @@ in {
     }
   '';
 
-  home.packages = defaultPkgs ++ polybarPkgs ++ nixPkgs ++ gitPkgs ++ xmonadPkgs
-    ++ emacsPkgs ++ mailPkgs ++ gnomePkgs;
+  home.packages = defaultPkgs  ++ nixPkgs 
+    ++ emacsPkgs ++ mailPkgs ;
   home.sessionVariables = {
     EDITOR = "emacsclient -c -a emacs";
     BROWSER = "firefox";
@@ -227,14 +203,8 @@ in {
       enable = true;
       enableZshIntegration = true;
     };
-    feh = {
-      enable = true;
 
-    };
-    gpg = {
-      enable = true;
 
-    };
     fzf = {
       enable = true;
       enableZshIntegration = true;
@@ -253,14 +223,6 @@ in {
     vscode.enable = true;
   };
 
-  services = {
-    # screenshot
-    flameshot.enable = true;
-
-    nextcloud-client = {
-      enable = true;
-      startInBackground = true;
-    };
-  };
+ 
 
 }

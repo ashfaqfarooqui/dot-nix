@@ -1,1 +1,1 @@
-[ ./emacs ./git ./termite ./xmonad ./zsh ./alacritty ./rofi ./networkmanager ]
+[ ./emacs ./git ./termite ./alacritty ]

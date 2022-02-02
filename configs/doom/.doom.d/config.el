@@ -1,6 +1,6 @@
 ;; -*- lexical-binding: t; -*-
 
-     (setq user-full-name "Ashfaq Farooqui")
+(setq user-full-name "Ashfaq Farooqui")
      (setq user-mail-address "ashfaq@ashfaqfarooqui.me")
 
 (setq auth-sources '("~/.authinfo.gpg")
@@ -169,9 +169,9 @@
   :after rainbow-delimiter
 :init (rainbow-mode))
 
-    (after! nyan-mode
-         :init
-        (nyan-mode))
+(after! nyan-mode
+     :init
+    (nyan-mode))
 
 (setq display-line-numbers-type 'relative)
 
@@ -185,24 +185,24 @@
 (setq super-save-auto-save-when-idle t)
 )
 
-        (add-hook! org-mode :append
-                   #'visual-line-mode)
+(add-hook! org-mode :append
+           #'visual-line-mode)
 
-        (add-hook! text-mode :append
-                   #'visual-line-mode)
+(add-hook! text-mode :append
+           #'visual-line-mode)
 
-        (add-hook! latex-mode :append
-                   #'visual-line-mode)
+(add-hook! latex-mode :append
+           #'visual-line-mode)
 
-        (use-package! visual-fill-column
-          :config
-          (add-hook 'visual-line-mode-hook #'visual-fill-column-mode)
-          (advice-add 'text-scale-adjust :after
-                      #'visual-fill-column-adjust)
-          (setq visual-fill-column-width 100)
-          (setq-default fill-column 100)
-          (setq visual-fill-column-center-text t)
-          )
+(use-package! visual-fill-column
+  :config
+  (add-hook 'visual-line-mode-hook #'visual-fill-column-mode)
+  (advice-add 'text-scale-adjust :after
+              #'visual-fill-column-adjust)
+  (setq visual-fill-column-width 100)
+  (setq-default fill-column 100)
+  (setq visual-fill-column-center-text t)
+  )
 
 (after! smartparens
   :config
@@ -299,6 +299,17 @@ Single Capitals as you type."
 
 (add-hook 'after-change-major-mode-hook #'doom-modeline-conditional-buffer-encoding)
 
+(use-package! org-appear
+  :after org
+  :hook (org-mode . org-appear-mode)
+  :config
+  (setq org-appear-autoemphasis t
+        org-appear-autosubmarkers t
+        org-appear-autolinks nil)
+  ;; for proper first-time setup, `org-appear--set-fragments'
+  ;; needs to be run after other hooks have acted.
+  (run-at-time nil nil #'org-appear--set-fragments))
+
 (after! org
 (add-to-list 'org-modules 'org-habit t)
 ; position the habit graph on the agenda to the right of the default
@@ -312,6 +323,7 @@ Single Capitals as you type."
 
 (after! org
 (setq org-directory "~/Nextcloud/Docs")
+(setq org-id-locations-file (expand-file-name ".orgids" org-directory))
 
   (defun org-file-path (filename)
     "Return the absolute address of an org file, given its relative name."
@@ -320,13 +332,15 @@ Single Capitals as you type."
   (setq org-inbox-orgzly-file
         (concat (org-file-path "inbox-orgzly.org")))
   (setq org-inbox-file (org-file-path "inbox.org"))
-(setq org-basb-main-file (concat (org-file-path "Roam/index.org")))
+(setq org-basb-main-file (concat (org-file-path "Roam/pages/index.org")))
 )
 
+(after! org
 (defun my/open-main-file ()
   (interactive)
 (org-open-file org-basb-main-file)
                         )
+)
 
 (after! org
   (setq org-pretty-entities          t ; UTF8 all the things!
@@ -345,10 +359,46 @@ Single Capitals as you type."
   (setq org-special-ctrl-a/e t))
 
 (after! org
-  (add-to-list 'org-todo-keywords '(sequence "APT"))
-  (add-to-list 'org-todo-keyword-faces '(("APT" . +org-todo-active)))
+
+    (setq org-todo-keywords
+        '((sequence
+           "TODO(t)"  ; A task that needs doing & is ready to do
+           "PROJ(p)"  ; A project, which usually contains other tasks
+           "LOOP(r)"  ; A recurring task
+           "NEXT(n)"  ; A task that is in progress
+           "WAIT(w)"  ; Something external is holding up this task
+           "HOLD(h)"  ; This task is paused/on hold because of me
+           "IDEA(i)"  ; An unconfirmed and unapproved task or notion
+           "|"
+           "DONE(d)"  ; Task successfully completed
+           "KILL(k)") ; Task was cancelled, aborted or is no longer applicable
+          (sequence
+           "[ ](T)"   ; A task that needs doing
+           "[-](S)"   ; Task is in progress
+           "[?](W)"   ; Task is being held up or paused
+           "|"
+           "[X](D)")  ; Task was completed
+          (sequence
+           "|"
+           "OKAY(o)"
+           "YES(y)"
+           "NO(n)")
+          (sequence
+           "MEETING(m)"))
+        org-todo-keyword-faces
+        '(("[-]"  . +org-todo-active)
+          ("NEXT" . +org-todo-active)
+          ("MEETING" . +org-todo-active)
+          ("[?]"  . +org-todo-onhold)
+          ("WAIT" . +org-todo-onhold)
+          ("HOLD" . +org-todo-onhold)
+          ("PROJ" . +org-todo-project)
+          ("NO"   . +org-todo-cancel)
+          ("KILL" . +org-todo-cancel)))
 
   )
+
+(setq org-startup-folded 'content)
 
 ; Tags with fast selection keys
 (after! org
@@ -380,64 +430,62 @@ Single Capitals as you type."
   ;; will add the new entry as a child entry.
   (goto-char (point-min)))
 
-   (after! org   (setq org-capture-templates
-            (quote (
+(after! org   (setq org-capture-templates
+                       (quote (
 
-                    ("p" "Protocol" entry (file+headline org-inbox-file "Links")
-                     "* %^{Title}\nCaptured On: %U\nSource: %u, %c\n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?")
-                    ("L" "Protocol Link" entry (file+headline org-inbox-file "Links")
-                     "* %? [[%:link][%:description]] \nCaptured On: %U")
+                               ("p" "Protocol" entry (file+headline org-inbox-file "Links")
+                                "* %^{Title}\nCaptured On: %U\nSource: %u, %c\n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?")
+                               ("L" "Protocol Link" entry (file+headline org-inbox-file "Links")
+                                "* %? [[%:link][%:description]] \nCaptured On: %U")
+                               ("l" "link" entry (file+headline  org-inbox-file "Links")
+                                "* TODO %(org-cliplink-capture)" :immediate-finish t)
+                               ("i" "Inbox"
+                                entry
+                                (file org-inbox-file)
+                                "* %u %? \n :\n:PROPERTIES:\n:CREATED: %U\n:END:")
 
-                    ("P" "Project" entry (file+headline org-basb-main-file "Projects")
-                     (file "~/.doom.d/templates/newProjecttemplate.org") :empty-lines 1)
+                               ("t" "Task"
+                                entry
+                                (file+headline org-inbox-file "Tasks")
+                                "* TODO %? \n :PROPERTIES:\n:CREATED: %U\n:END:")
+;
+;                               ("h" "health log")
+;                               ("hr" "Running" entry (file+headline  "~/Orgs/BASB/Areas/Health/log.org" "Running")
+;                                (file "~/.doom.d/templates/running.org") :empty-lines 1)
+;
+;                               ("hs" "Sleep" entry (file+headline  "~/Orgs/BASB/Areas/Health/log.org" "Sleep")
+;                                (file "~/.doom.d/templates/sleep.org") :empty-lines 1)
 
-                    ("s" "Someday" entry (file+headline (concat (org-file-path "BASB/somedaymaybe.org" "Someday")))
-                     "* %?\n")
-                    ("m" "Maybe" entry (file+headline (concat (org-file-path "BASB/somedaymaybe.org" "Maybe")))
-                     "* %?\n")
+                               ("e" "Email" entry (file+headline org-inbox-file "Reply to Mail")
+                                "* TODO Process email |- %:from: :: %:subject :EMAIL:\n:PROPERTIES:\n:CREATED: %U\n:EMAIL-SOURCE: %l\n:END:\n\n
+   #+begin_quote \n
+   %i
+   #+end_quote\n
 
-
-                    ("n" "Notes"
-                     entry
-                     (file+headline org-inbox-file "Notes")
-                     "* %u %? :NOTE:\n")
-
-                    ("t" "Task"
-                     entry
-                     (file+headline org-inbox-file "Tasks")
-                     "* TODO %?\n")
-
-                     ("h" "health log")
-                    ("hr" "Running" entry (file+headline  "~/Orgs/BASB/Areas/Health/log.org" "Running")
-                     (file "~/.doom.d/templates/running.org") :empty-lines 1)
-
-                    ("hs" "Sleep" entry (file+headline  "~/Orgs/BASB/Areas/Health/log.org" "Sleep")
-                     (file "~/.doom.d/templates/sleep.org") :empty-lines 1)
-
-
-                    ("e" "Email" entry (file+headline org-inbox-file "Mail")
-                     "* TODO %? email |- %:from: %:subject :EMAIL:\n:PROPERTIES:\n:CREATED: %U\n:EMAIL-SOURCE: %l\n:END:\n%U\n" )
+   %?
+                " )
 
 
 
-                    ("H" "Habit" entry (file org-inbox-file)
-                     "* TODO %?\n%U\n%a\nSCHEDULED: %(format-time-string \"%<<%Y-%m-%d %a .+1d/3d>>\")\n:PROPERTIES:\n:STYLE: habit\n:REPEAT_TO_STATE: TODO\n:END:\n")
+
+                               ("H" "Habit" entry (file org-inbox-file)
+                                "* TODO %?\n%U\n%a\nSCHEDULED: %(format-time-string \"%<<%Y-%m-%d %a .+1d/3d>>\")\n:PROPERTIES:\n:STYLE: habit\n:REPEAT_TO_STATE: TODO\n:END:\n")
 
 
-                    ("c" "cooking")
-                    ("cr" "Cookbook" entry (file (concat (org-file-path  "BASB/Reference/Cookbook/cookbook.org")))
-                     "%(org-chef-get-recipe-from-url)"
-                     :empty-lines 1)
+                               ("c" "cooking")
+                               ("cr" "Cookbook" entry (file (concat (org-file-path  "BASB/Resource/Cookbook/cookbook.org")))
+                                "%(org-chef-get-recipe-from-url)"
+                                :empty-lines 1)
 
-                    ("cm" "Manual Cookbook" entry (file (concat (org-file-path "BASB/Reference/Cookbook/cookbook.org")))
-                     "* %^{Recipe title: }\n  :PROPERTIES:\n  :source-url:\n  :servings:\n  :prep-time:\n  :cook-time:\n  :ready-in:\n  :END:\n** Ingredients\n   %?\n** Directions\n\n")
+                               ("cm" "Manual Cookbook" entry (file (concat (org-file-path "BASB/Resource/Cookbook/cookbook.org")))
+                                "* %^{Recipe title: }\n  :PROPERTIES:\n  :source-url:\n  :servings:\n  :prep-time:\n  :cook-time:\n  :ready-in:\n  :END:\n** Ingredients\n   %?\n** Directions\n\n")
 
-              )
+                               )
 
 
-                    ))
+                              ))
 
-)
+     )
 
 (after! org
 (setq org-crypt-disable-auto-save nil)
@@ -449,32 +497,27 @@ Single Capitals as you type."
 (setq org-crypt-key "51DE2D88")
 )
 
+(setq org-download-screenshot-method "scrot -s %s")
+
 (after! org-roam
   (setq org-roam-directory "~/Nextcloud/Docs/Roam/")
+    (setq org-roam-dailies-directory "journals/")
   (setq org-roam-capture-templates
         '(("d" "default" plain "%?"
-           :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+           :if-new (file+head "pages/%<%Y%m%d%H%M%S>-${slug}.org"
                               "#+title: ${title}\n#+Date: %t")
            :unnarrowed t)
-          ("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
-           :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: Project")
+          ("p" "project" plain (file "templates/newProjectTemplate.org")
+           :if-new (file+head "pages/%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: Project")
            :unnarrowed t)
-          ("c" "Cooking" plain "%?"
-           :if-new (file+head "$Areas/Cooking/%<%Y%m%d%H%M%S>-${slug}.org"
-                              "#+title: ${title}\n#+Date: %t")
-           :unnarrowed t)
-          ("p" "People" plain "%?"
-           :if-new (file+head "References/People/${slug}.org"
-                              "#+title: ${title}\n")
-           :unnarrowed t)
-          ("i" "Religion")
+         ("i" "Religion")
           ("in" "note" plain "%?"
-           :if-new (file+head "Areas/Religion/%<%Y%m%d%H%M%S>-${slug}.org"
+           :if-new (file+head "pages/Islam/%<%Y%m%d%H%M%S>-${slug}.org"
                               "#title: ${title}\n")
            :unnarrowed t)
 
           ("ik" "Kuthbah" plain "%?"
-           :if-new (file+head) "Areas/Religion/Khutba/%<%Y%m%d%H%M%S>-${slug}.org" "#title: ${title}\n#+Date: %(org-read-date nil nil nil)")
+           :if-new (file+head) "pages/Islam/Khutba/%<%Y%m%d%H%M%S>-${slug}.org" "#title: ${title}\n#+Date: %(org-read-date nil nil nil)")
           )
 
         )
@@ -482,141 +525,129 @@ Single Capitals as you type."
 
   )
 
-  ;; Taking things from system crafters
-  (after! org-roam
-    (require 'org-roam-dailies) ;; Ensure the keymap is available
+;; Taking things from system crafters
+(after! org-roam
+  (require 'org-roam-dailies) ;; Ensure the keymap is available
 
-    (defun org-roam-node-insert-immediate (arg &rest args)
-      (interactive "P")
-      (let ((args (push arg args))
-            (org-roam-capture-templates (list (append (car org-roam-capture-templates)
-                                                      '(:immediate-finish t)))))
-        (apply #'org-roam-node-insert args)))
+  ;;(add-to-list 'org-tags-exclude-from-inheritance "Project")
 
-    (defun my/org-roam-filter-by-tag (tag-name)
-      (lambda (node)
-        (member tag-name (org-roam-node-tags node))))
-
-    (defun my/org-roam-list-notes-by-tag (tag-name)
-      (mapcar #'org-roam-node-file
-              (seq-filter
-               (my/org-roam-filter-by-tag tag-name)
-               (org-roam-node-list))))
-
-
-
-    (defun my/org-roam-refresh-agenda-list ()
-      (interactive)
-
-
-
-      (setq org-agenda-files (cl-remove-duplicates (append (my/org-roam-list-notes-by-tag "Project")
-                                          (my/org-roam-list-notes-by-tag "Area")
-                                          (my/org-roam-list-notes-by-tag "REFILE")
-                                          (list (concat org-roam-directory org-roam-dailies-directory))) :test 'string=)
-)
-
-      )
-
-    ;; Build the agenda list the first time for the session
-    (my/org-roam-refresh-agenda-list)
-
-
-
-    (defun my/org-roam-project-finalize-hook ()
-      "Adds the captured project file to `org-agenda-files' if the
-  capture was not aborted."
-      ;; Remove the hook since it was added temporarily
-      (remove-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
-
-      ;; Add project file to the agenda list if the capture was confirmed
-      (unless org-note-abort
-        (with-current-buffer (org-capture-get :buffer)
-          (add-to-list 'org-agenda-files (buffer-file-name)))))
-
-    (defun my/org-roam-find-area ()
-      (interactive)
-      ;; Add the project file to the agenda after capture is finished
-      (add-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
-
-      ;; Select a project file to open, creating it if necessary
-      (org-roam-node-find
-       nil
-       nil
-       (my/org-roam-filter-by-tag "Area")
-       :templates
-       '(("a" "area" plain "\n"
-          :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: Area")
-          :unnarrowed t))))
-
-
-    (defun my/org-roam-find-project ()
-      (interactive)
-      ;; Add the project file to the agenda after capture is finished
-      (add-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
-
-      ;; Select a project file to open, creating it if necessary
-      (org-roam-node-find
-       nil
-       nil
-       (my/org-roam-filter-by-tag "Project")
-       :templates
-       '(("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
-          :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: Project")
-          :unnarrowed t))))
-
-    (defun my/org-roam-capture-inbox ()
-      (interactive)
-      (org-roam-capture- :node (org-roam-node-create)
-                         :templates '(("i" "inbox" plain "* %?"
-                                       :if-new (file+head "Inbox.org" "#+title: Inbox\n#+filetags: Inbox")))))
-
-    (defun my/org-roam-capture-task ()
-      (interactive)
-      ;; Add the project file to the agenda after capture is finished
-      (add-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
-
-      ;; Capture the new task, creating the project file if necessary
-      (org-roam-capture- :node (org-roam-node-read
-                                nil
-                                (my/org-roam-filter-by-tag "Project"))
-                         :templates '(("p" "project" plain "** TODO %?"
-                                       :if-new (file+head+olp "%<%Y%m%d%H%M%S>-${slug}.org"
-                                                              "#+title: ${title}\n#+category: ${title}\n#+filetags: Project"
-                                                              ("Tasks"))))))
-
-    (defun my/org-roam-copy-todo-to-today ()
-      (interactive)
-      (let ((org-refile-keep t) ;; Set this to nil to delete the original!
-            (org-roam-dailies-capture-templates
-             '(("t" "tasks" entry "%?"
-                :if-new (file+head+olp "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>\n" ("Tasks")))))
-            (org-after-refile-insert-hook #'save-buffer)
-            today-file
-            pos)
-        (save-window-excursion
-          (org-roam-dailies--capture (current-time) t)
-          (setq today-file (buffer-file-name))
-          (setq pos (point)))
-
-        ;; Only refile if the target file is different than the current file
-        (unless (equal (file-truename today-file)
-                       (file-truename (buffer-file-name)))
-          (org-refile nil nil (list "Tasks" today-file nil pos)))))
-
-    (add-to-list 'org-after-todo-state-change-hook
-                 (lambda ()
-                   (when (equal org-state "DONE")
-                     (my/org-roam-copy-todo-to-today))))
-
+  (defun my/roam-filter-by-tag (ta)
+    "Return a list of note files containing tag." ;
+    (seq-uniq
+     (seq-map
+      #'car
+      (org-roam-db-query
+       [:select [nodes:file]
+        :from tags
+        :left-join nodes
+        :on (= tags:node-id nodes:id)
+        :where (like tag $s1)] ta )))
     )
-  (map! :leader
-        (:prefix-map ("r" . "personal")
-         "a" #'my/org-roam-find-area
-         "p" #'my/org-roam-find-project
-         "t" #'my/org-roam-capture-task
-         "b" #'my/org-roam-capture-inbox
-         ))
+
+
+  (defun my/roam-get-project-files ()
+    "Return a list of note files containing project tag." ;
+    (my/roam-filter-by-tag "Project"))
+
+  (defun my/roam-get-area-files ()
+    "Return a list of note files containing area tag." ;
+
+    (my/roam-filter-by-tag "Area"))
+
+
+
+  (defun org-roam-node-insert-immediate (arg &rest args)
+    (interactive "P")
+    (let ((args (push arg args))
+          (org-roam-capture-templates (list (append (car org-roam-capture-templates)
+                                                    '(:immediate-finish t)))))
+      (apply #'org-roam-node-insert args)))
+
+  (defun my/org-roam-filter-by-tag (tag-name)
+    (lambda (node)
+      (member tag-name (org-roam-node-tags node))))
+
+  (defun my/org-roam-list-notes-by-tag (tag-name)
+    (mapcar #'org-roam-node-file
+            (seq-filter
+             (my/org-roam-filter-by-tag tag-name)
+             (org-roam-node-list))))
+
+
+ (defun my/org-roam-project-finalize-hook ()
+    "Adds the captured project file to `org-agenda-files' if the
+capture was not aborted."
+    ;; Remove the hook since it was added temporarily
+    (remove-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
+
+    ;; Add project file to the agenda list if the capture was confirmed
+    (unless org-note-abort
+      (with-current-buffer (org-capture-get :buffer)
+        (add-to-list 'org-agenda-files (buffer-file-name)))))
+
+  (defun my/org-roam-find-area ()
+    (interactive)
+    ;; Add the project file to the agenda after capture is finished
+    (add-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
+
+    ;; Select a project file to open, creating it if necessary
+    (org-roam-node-find
+     nil
+     nil
+     (my/org-roam-filter-by-tag "Area")
+     :templates
+     '(("a" "area" plain "\n"
+        :if-new (file+head "pages/%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: Area")
+        :unnarrowed t))))
+
+
+  (defun my/org-roam-find-project ()
+    (interactive)
+    ;; Add the project file to the agenda after capture is finished
+    (add-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
+
+    ;; Select a project file to open, creating it if necessary
+    (org-roam-node-find
+     nil
+     nil
+     (my/org-roam-filter-by-tag "Project")
+     :templates
+     '(("p" "project" plain (file "~/.doom.d/templates/newProjecttemplate.org")
+        :if-new (file+head "pages/%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: Project")
+        :unnarrowed t))))
+
+  (defun my/org-roam-copy-todo-to-today ()
+    (interactive)
+    (let ((org-refile-keep t) ;; Set this to nil to delete the original!
+          (org-roam-dailies-capture-templates
+           '(("t" "tasks" entry "%?"
+              :if-new (file+head+olp "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>\n" ("Tasks")))))
+          (org-after-refile-insert-hook #'save-buffer)
+          today-file
+          pos)
+      (save-window-excursion
+        (org-roam-dailies--capture (current-time) t)
+        (setq today-file (buffer-file-name))
+        (setq pos (point)))
+
+      ;; Only refile if the target file is different than the current file
+      (unless (equal (file-truename today-file)
+                     (file-truename (buffer-file-name)))
+        (org-refile nil nil (list "Tasks" today-file nil pos)))))
+
+  (add-to-list 'org-after-todo-state-change-hook
+               (lambda ()
+                 (when (equal org-state "DONE")
+                   (my/org-roam-copy-todo-to-today))))
+
+  )
+(map! :leader
+      (:prefix-map ("r" . "personal")
+       "a" #'my/org-roam-find-area
+       "p" #'my/org-roam-find-project
+       "t" #'my/org-roam-capture-task
+       "b" #'my/org-roam-capture-inbox
+       ))
 
 (use-package! websocket
     :after org-roam)
@@ -634,7 +665,11 @@ Single Capitals as you type."
           org-roam-ui-update-on-save t
           org-roam-ui-open-on-start t))
 
-(setq deft-directory org-roam-directory)
+(setq deft-default-extension "org")
+(setq deft-directory org-roam-directory
+          deft-recursive t
+          deft-strip-summary-regexp ":PROPERTIES:\n\\(.+\n\\)+:END:\n"
+          deft-use-filename-as-title t)
 
 ;;;###autoload
 
@@ -665,11 +700,22 @@ otherwise call `org-self-insert-command'."
 
 (unpackaged/def-org-maybe-surround "~" "=" "*" "/" "+"))
 
+;(setq org-attach-id-dir "./.attach")
+
 (after! org (setq org-export-headline-levels 5)) ; I like nesting
 
 (after! org
   (require 'ox-extra)
   (ox-extras-activate '(ignore-headlines)))
+
+(defun markdown-convert-buffer-to-org ()
+    "Convert the current buffer's content from markdown to orgmode format and save it with the current buffer's file name but with .org extension."
+    (interactive)
+    (shell-command-on-region (point-min) (point-max)
+                             (format "pandoc -f markdown -t org -o %s"
+                                     (concat (file-name-sans-extension (buffer-file-name)) ".org"))))
+
+(use-package! org-pandoc-import :after org)
 
 (after! org
   (defun narrow-or-widen-dwim (p)
@@ -748,6 +794,69 @@ is already narrowed."
         "*/.auctex-auto"
         "*/_region_.log"
         "*/_region_.tex"))
+
+(after! org
+(defun org-capture-mail ()
+  (interactive)
+  (call-interactively 'org-store-link)
+  (org-capture nil "e"))
+
+(map! :map mu4e-headers-mode-map
+      :ne "p" 'org-capture-mail)
+
+(map! :map mu4e-view-mode-map
+      :ne "p" 'org-capture-mail)
+
+
+)
+
+(after! org
+  (defun my/style-org-agenda()
+ ;; (my/buffer-face-mode-variable)
+  (set-face-attribute 'org-agenda-date nil :height 1.1)
+  (set-face-attribute 'org-agenda-date-today nil :height 1.1 :slant 'italic)
+  (set-face-attribute 'org-agenda-date-weekend nil :height 1.1))
+
+(add-hook 'org-agenda-mode-hook 'my/style-org-agenda)
+
+(setq org-agenda-breadcrumbs-separator " ❱ "
+      org-agenda-current-time-string "⏰ ┈┈┈┈┈┈┈┈┈┈┈ now"
+      org-agenda-time-grid '((weekly today require-timed)
+                             (800 1000 1200 1400 1600 1800 2000)
+                             "---" "┈┈┈┈┈┈┈┈┈┈┈┈┈")
+      org-agenda-prefix-format '((agenda . "%i %-12:c%?-12t%b% s")
+                                 (todo . " %i %-12:c")
+                                 (tags . " %i %-12:c")
+                                 (search . " %i %-12:c")))
+
+(setq org-agenda-format-date (lambda (date) (concat "\n" (make-string (window-width) 9472)
+                                                    "\n"
+                                                    (org-agenda-format-date-aligned date))))
+(setq org-cycle-separator-lines 2)
+(setq org-agenda-category-icon-alist
+      `(("Work" ,(list (all-the-icons-faicon "cogs")) nil nil :ascent center)
+        ("Personal" ,(list (all-the-icons-material "person")) nil nil :ascent center)
+        ("Calendar" ,(list (all-the-icons-faicon "calendar")) nil nil :ascent center)
+        ("Reading" ,(list (all-the-icons-faicon "book")) nil nil :ascent center)))
+
+    (defun my/org-roam-refresh-agenda-list ()
+      (interactive)
+
+
+
+      (setq org-agenda-files (append (my/roam-get-project-files)
+                                     (my/roam-get-area-files)
+                                     (my/roam-filter-by-tag "REFILE")
+                                     ))
+
+      (add-to-list 'org-agenda-files org-basb-main-file)
+      (add-to-list 'org-agenda-files org-inbox-file)
+      (add-to-list 'org-agenda-files org-inbox-orgzly-file)
+      )
+
+    ;; Build the agenda list the first time for the session
+    (my/org-roam-refresh-agenda-list)
+    )
 
 ;;; :tools magit
 
@@ -923,7 +1032,9 @@ is already narrowed."
   )
 
 (after! mu4e
-
+  (setq mu4e-maildir-shortcuts
+        '( ("/ri.se/Inbox"               . ?i)
+           ("/ashfaqfarooqui.me/Inbox"   . ?p)))
 
   (setq mu4e-headers-fields
         '((:flags . 6)
@@ -972,7 +1083,7 @@ is already narrowed."
                         (mu4e-sent-folder       . "/ashfaqfarooqui.me/Sent")
                         (mu4e-drafts-folder     . "/ashfaqfarooqui.me/Drafts")
                         (mu4e-trash-folder      . "/ashfaqfarooqui.me/Trash")
-                        (mu4e-refile-folder     . "/ashfaqfarooqui.me/All Mail")
+                        (mu4e-refile-folder     . "/ashfaqfarooqui.me/Archive")
                         (smtpmail-smtp-user     . "ashfaq.farooqui@mailbox.org")
                         ;;    (user-mail-address      . "ashfaq@ashfaqfarooqui.me")    ;; only needed for mu < 1.4
                         (mu4e-attachment-dir . "~/Documents/MailAttachments/Personal")
@@ -988,7 +1099,7 @@ is already narrowed."
                         (mu4e-sent-folder       . "/ri.se/Sent Mail")
                         (mu4e-drafts-folder     . "/ri.se/Drafts")
                         (mu4e-trash-folder      . "/ri.se/Trash")
-                        (mu4e-refile-folder     . "/ri.se/All Mail")
+                        (mu4e-refile-folder     . "/ri.se/Arkiv")
                         (smtpmail-smtp-user     . "ashfaq.farooqui@ri.se")
                         ;;    (user-mail-address      . "ashfaq@ashfaqfarooqui.me")    ;; only needed for mu < 1.4
                         (mu4e-attachment-dir . "~/Documents/MailAttachments/ri.se")
@@ -1007,7 +1118,7 @@ is already narrowed."
 
   )
 
-       ;;;Taking the below from [[http://mbork.pl/2016-02-06_An_attachment_reminder_in_mu4e]]
+;;;Taking the below from [[http://mbork.pl/2016-02-06_An_attachment_reminder_in_mu4e]]
 (after! mu4e
     (defun mbork/message-attachment-present-p ()
       "Return t if an attachment is found in the current message."
@@ -1068,6 +1179,8 @@ is already narrowed."
  //Ashfaq
  #+end_signature")
   )
+
+(setq +org-capture-emails-file "inbox.org")
 
 (after! lsp-mode
 (setq lsp-clients-clangd-args '("-j=3"

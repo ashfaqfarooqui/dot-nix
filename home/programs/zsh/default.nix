@@ -2,7 +2,7 @@
 
 {
   programs.zsh = {
-    enable = true;
+    #enable = true;
     enableCompletion = true;
     enableAutosuggestions = true;
     #  environment.pathsToLink = [ "/share/zsh" ];
